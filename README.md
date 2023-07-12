@@ -1,8 +1,8 @@
-# Sample GitLab Project
+# semantico Project
 
-This sample project shows how a project in GitLab looks for demonstration purposes. It contains issues, merge requests and Markdown files in many branches,
-named and filled with lorem ipsum.
+## Introduction
+semantico is a tool to collect informations on research papers and the actual respective papers to link them trying to represent their content and their metadata in susceptible form to understand them using an ontology O.
 
-You can look around to get an idea how to structure your project and, when done, you can safely delete this project.
+The understood will then be used to enrich O.
 
 [Learn more about creating GitLab projects.](https://docs.gitlab.com/ee/gitlab-basics/create-project.html)
