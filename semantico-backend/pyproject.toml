@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "semantico-backend"
+version = "0.1.0"
+description = ""
+authors = ["Anis Koubaa <mohamed.koubaa@kit.edu>"]
+readme = "README.md"
+packages = [{include = "semantico_backend"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+pymupdf = "^1.22.5"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
