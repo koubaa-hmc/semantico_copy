@@ -1,0 +1,16 @@
+version: '3.7'
+
+volumes:
+  semantico:
+
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: database
+    restart: always
+    volumes:
+      - semantico:/shared-data
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: Semantico
