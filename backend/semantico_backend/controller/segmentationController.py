@@ -10,7 +10,7 @@ segmenter = segmentToJson()
 
 @routerSegmentToJson.get("/paragraphs/count/{pdfPath}")
 async def count_paragraphs(pdfPath: str):
-    if pdfPath == "negativTest":
+    if pdfPath == "test":
         raise HTTPException(status_code=404, detail=f"'{pdfPath}' document not found")
     else:
-        return segmenter.countParagraphs()
+        return segmenter.countParagraphs(pdfPath)
