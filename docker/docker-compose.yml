@@ -18,12 +18,12 @@ services:
       - frontend
   backend:
     image: backend
-    build: ../backend/Docker
+    build:
+      context: ../backend
+      dockerfile: Docker/Dockerfile
     restart: always
-    volumes:
-      - type: bind
-        source: ../backend/
-        target: /backend
+    ports:
+      - "8000:8000"
     networks:
       - frontend
 
