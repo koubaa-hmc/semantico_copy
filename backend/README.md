@@ -1,4 +1,4 @@
-## Semantico Backend
+# Semantico Backend
 
 to build the docker of this project
 
@@ -7,4 +7,3 @@ to build the docker of this project
 to run the docker
 
 ```docker run sem_backend```
-

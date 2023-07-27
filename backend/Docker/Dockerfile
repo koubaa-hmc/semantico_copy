@@ -42,6 +42,8 @@ FROM base AS final
 # copy virtual environment and wheel file
 COPY --from=builder /backend/.venv ./.venv
 COPY --from=builder /backend/dist .
+
+# copy entry point: should be executable
 COPY --chmod=744 Docker/docker-entrypoint.sh .
 
 # install semantico_backend dependencies
