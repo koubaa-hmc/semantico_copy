@@ -4,14 +4,6 @@ volumes:
   semantico:
 
 services:
-  reverseproxy:
-    image: reverseproxy:dev
-    build: ./Tools/Proxy
-    restart: always
-    ports:
-      - "8080:8080"
-    networks:
-      - frontend
   mongodb:
     image: mongo:latest
     container_name: database
