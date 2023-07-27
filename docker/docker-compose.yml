@@ -4,6 +4,14 @@ volumes:
   semantico:
 
 services:
+  reverseproxy:
+    image: reverseproxy:dev
+    build: ./Tools/Proxy
+    restart: always
+    ports:
+      - "8080:8080"
+    networks:
+      - frontend
   mongodb:
     image: mongo:latest
     container_name: database
@@ -14,3 +22,19 @@ services:
       - "27017:27017"
     environment:
       MONGO_INITDB_DATABASE: Semantico
+    networks:
+      - frontend
+  backend:
+    image: backend
+    build: ../backend/Docker
+    restart: always
+    volumes:
+      - type: bind
+        source: ../backend/
+        target: /backend
+    networks:
+      - frontend
+
+networks:
+  frontend:
+    name: frontend
