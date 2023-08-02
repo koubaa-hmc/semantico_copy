@@ -11,6 +11,7 @@ to run the docker
 to run the app on local host
 
 ```poetry build```
+
 ```poetry run uvicorn semantico_backend.controller.baseController:app --reload```
 
 The API is then usable under [http://localhost:8000/docs]
