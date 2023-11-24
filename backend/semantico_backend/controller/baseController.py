@@ -5,6 +5,7 @@ from semantico_backend.controller.segmentationController import routerSegmentToJ
 app = FastAPI()
 app.include_router(routerSegmentToJson)
 
-@app.get("/")
+
+@app.get('/')
 async def root():
-    return {"message" : "Hello World"}
+    return dict(message="Hello World")

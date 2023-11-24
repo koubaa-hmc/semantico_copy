@@ -1,16 +1,18 @@
 from fastapi import APIRouter
 from fastapi import HTTPException
-from semantico_backend.collector.pdf_analyzer.segmenter import segmentToJson
+
+from semantico_backend.collector.pdf_analyzer.segmenter import Segmentation
 
 routerSegmentToJson = APIRouter(
     prefix="/segment",
 )
 
-segmenter = segmentToJson()
+segmentation = Segmentation()
+
 
 @routerSegmentToJson.get("/paragraphs/count/{pdfPath}")
-async def count_paragraphs(pdfPath: str):
-    if pdfPath == "test":
-        raise HTTPException(status_code=404, detail=f"'{pdfPath}' document not found")
+async def count_paragraphs(pdf_path: str):
+    if pdf_path == "test":
+        raise HTTPException(status_code=404, detail=f"'{pdf_path}' document not found")
     else:
-        return segmenter.countParagraphs(pdfPath)
+        return segmentation.count_paragraphs(pdf_path)
