@@ -1,0 +1,5 @@
+{
+  "base_url": "https://api.zotero.org",
+  "Zotero-API-Version": "3",
+  "output_file": "output/my_file"
+}
