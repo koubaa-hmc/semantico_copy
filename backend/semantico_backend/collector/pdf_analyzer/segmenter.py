@@ -1,7 +1,7 @@
 import logging
 
 from semantico_backend.collector.zotero.adv_interface import ZoteroInterface
-from semantico_backend.collector.pdf_analyzer.miner import PdfReader
+from semantico_backend.collector.pdf_analyzer.adv_miner import PdfReader
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)

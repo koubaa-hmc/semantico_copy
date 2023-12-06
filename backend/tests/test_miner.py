@@ -1,5 +1,5 @@
 import unittest
-from semantico_backend.collector.pdf_analyzer.miner import PdfReader
+from semantico_backend.collector.pdf_analyzer.adv_miner import PdfReader
 
 
 class TestMiner(unittest.TestCase):
