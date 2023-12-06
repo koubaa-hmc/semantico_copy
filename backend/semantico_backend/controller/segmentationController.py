@@ -10,9 +10,9 @@ routerSegmentToJson = APIRouter(
 segmentation = Segmentation()
 
 
-@routerSegmentToJson.get("/paragraphs/count/{pdfPath}")
-async def count_paragraphs(pdf_path: str):
-    if pdf_path == "test":
-        raise HTTPException(status_code=404, detail=f"'{pdf_path}' document not found")
+@routerSegmentToJson.get("/paragraphs/count/{pdfDesc}")
+async def count_paragraphs(pdf_desc: str):
+    if pdf_desc == "test":
+        raise HTTPException(status_code=404, detail=f"'{pdf_desc}' document not found")
     else:
-        return segmentation.count_paragraphs(pdf_path)
+        return segmentation.count_paragraphs(pdf_desc)

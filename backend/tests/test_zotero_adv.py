@@ -18,7 +18,7 @@ class TestZotero(unittest.TestCase):
             self.conf = json.load(conf)
 
         # set app configurations
-        self.output_file_path = self.conf['output_file']
+        self.output_file_path = os.path.join(current_path, self.conf['output_folder'])
         self.top_count = self.conf['top_count']
 
         # instantiation
