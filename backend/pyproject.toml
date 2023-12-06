@@ -11,6 +11,7 @@ python = "^3.10"
 pymupdf = "^1.22.5"
 fastapi = {extras = ["all"], version = "^0.104.1"}
 requests = "^2.31.0"
+pyzotero = "^1.5.18"
 
 
 [build-system]

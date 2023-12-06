@@ -33,7 +33,7 @@ class ZoteroInterface:
     # items
     def get_items(self, ident: str, group=False, item_key=None, children=False,
                   top=False, trash=False,
-                  res_format=json):
+                  res_format=json) -> Response:
         user_group_prefix = self._build_user_group_prefix(group, ident)
         request = self._build_item_request(item_key, children, top)
 
@@ -43,6 +43,11 @@ class ZoteroInterface:
             data.write('\n')
             data.write(str(response.text))
         return response
+
+    def get_link_to_pdf(self, ident: str, item_key):
+        items = json.loads(self.get_items(ident=ident, group=False, item_key=item_key).text)
+        for item in items:
+            print(f"Item type: {item['data']['itemType']}")
 
     # collections
     def get_collections(self, ident: str, group=False, collection_key=None, sub_collections=False,
