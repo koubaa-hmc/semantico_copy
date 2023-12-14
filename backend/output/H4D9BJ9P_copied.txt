@@ -1,0 +1,656 @@
+ Conceptual Graphs for a Data Base Interface
+Abstract: A data base system that supports natural language queries is not really natural if it requires the user to know how the data are represented. This paper defines a formalism, called conceptual graphs, that can describe data according to the user’s view and access data according to the system’s view. In addition, the graphs can represent functional dependencies in the data base and support inferences and computations that are not explicit in the initial query.
+
+Introduction
+Historically, data base systems evolved as generalized access methods. They addressed the narrow issue of enabling independent programs to cooperate in accessing the same data. As a result, most data base systems emphasize the questions of how data may be stored or accessed, but they ignore the questions of what the data base means to the people who use it or how it relates to the overall operations of a business enterprise. When a business converts from a manual system to a computerized system, the computer cannot adapt it self to the users’ view of the world, and the people have to learn strange conventions to access their familiar data.
+Before a computer can adapt it self to a person’s world view, that view must be described in a formalism that the computer can process.The conceptual graphs defined in this paper provide a formal notation that serves as an intermediary between the human and the computer: the graphs describe the meaning of data according to the user’s view, but they are also associated with procedures that can access the data according to the machine view. When a person asks a question in ordinary English or other natural language, the system would translate the question into a conceptual graph. Then the system could search for other graphs that describe the data base and are relevant to the original question. When it finds such graphs, it can use them to access the data and compute the answer.
+Conceptual graphs are not intended as a means of storing data but as a means of describing data and the interrelationships. As a method of formal description, they have three principal advantages: First, they can support a direct mapping onto a relational data base as defined by Codd [ 1 ]; second, they can be used as a semantic basis for natural language; and third, they can Support automatic inferences to compute relationships that are not explicitly mentioned. The first point has been shown by the TORUS system at the University of Toronto [ 2 ], which uses a representation similar to the one developed here. The second point has been investigated in a growing body of research in computational linguistics and artificial intelligence; for a survey of that work, see the article by Heidorn [ 3 ] and the collections of papers edited by Schank and Colby [ 4 ] or Bobrow and Collins [ 5 ]. The third point is the principal topic of this paper: Besides representing logical relations in a conceptual graph, the system must use the graphs to perform inferences that answer the original question.
+Since relational data bases have a simpler logical structure than network or hierarchical systems, they are an important first step toward simplifying the user’s interface. Relations are a good interface for a professional programmer, and they can also be used by non programmers who are familiar with the data base conventions. Several query languages, such as SEQUEL [ 6 ], SQUARE [ 7 ], and Query-by-Example [ 8 ], have been designed for non programmers who have been trained in using the data base. But casual users and even programmers who had not learned the conventions would require a considerable period of training before they could ask a question.
+Figure 1 shows a sample relation in a form that might be presented to a user of a relational query language. The name of the relation is HIRE, and its domains are named EMPLOYEE, MANAGER, and DATE. Under the domain headings are the n-tuples for which the relation is true. A person familiar with the real world system could probably guess that the three domains represent an employee, the manager who originally hired the employee, and the date the employee was hired. But there is no information in the relation that excludes other interpretations, such as, for each manger, the date he first became a manger and the first employee he hired. For a complex data base with dozens of relations, few users can correctly guess the meaning of every domain in every relation.
+The meaning of a relation is called its intension, and the set of all the n-tuples stored in the data base is called its extension. The question of representing extensions, accessing them, and modifying them is the familiar one that all data base systems address. The question of representing intensions, however, tends to be ignored, largely because adequate formalisms and techniques for handling them have not been available. For a data base system, the three principal kinds of intensional information are the functional dependencies, the domain roles, and the constraints on domain values. In a data base relation, functional dependencies indicate which domains are permissible keys and which domains are dependent upon the keys; for the relation in Fig. 1 , EMPLOYEE is the key domain, and the domains MANAGER and DATE are determined when EMPLOYEE is specified. The domain roles indicate how the domains are related; for Fig. 1, the MANGER of each n-tuple performs an act, HIRE, the EMPLOYEE is the one who is hired, and the DATE is when the particular act occurred. The constraints indicate permissible values; for Fig. 1, they would specify the expected form of a name or date, the requirement that no date of hire may precede the date the company was founded, and the constraint that no person may hire himself.
+Besides representing intensions, the system must use them to provide a more natural interface and to check the plausibility of new information that is being added. This paper defines conceptual graphs as an intensional formalism and shows how they might be used to meet the following requirements:
+1. Familiar conventions A person who knows the forms and procedures of a business enterprise should be able to ask questions about it without having to learn the peculiarities of the computer system.
+2. Automatic inference The system should infer relations that are not stored explicitly in the data base.
+3. Naturalness  The intension formalism should be close enough to the semantics of natural language to support convenient dialogue and prompting facilities.
+4. Semantic integrity The domain constraints should help to keep the data base an accurate reflection of the real world.
+These are requirements for the user's interface; the physical implementation must also satisfy other criteria, such as speed and reliability. By separating the conceptual graphs that describe the meaning of data from the system that stores and accesses data, the two problems can be addressed independently. Efficient storage allocation or means of recovery after a system crash must be supported by the underlying data base system; what the data mean should be described by an intensional formalism at the interface to the data.
+To meet these requirements, conceptual graphs are a network of concepts and conceptual relations that describe the domain roles. Certain conceptual graphs, the conceptual schemata and working graphs, have a superimposed network of functional dependencies that are mapped to the data base. To answer a user's question, the system assembles a working graph that has the appropriate domain roles together with functional dependencies that determine the answer. The next several sections of this paper define these structures formally, present an algorithm for computing the working graphs, and give an example of how the system would process a typical question.
+
+Conceptual graphs
+In the theory of conceptual graphs, the basic primitive is called a concept. It is represented by a box containing a sort label, which identifies the type of concept. For readability, sort labels are written as English words in upper case letters, but they could just as well be numbers or computer addresses.
+Formally, a concept is an undefined primitive. Informally, it is a symbol that could represent anything that anyone might ever think of-an entity, action, or property in the real world, an abstraction, fantasy, or mathematical function. Some concepts are shown in Fig. 2. For those aspects of the world recorded in the data base, at least one concept is defined for every data base do- main. Some concepts are more general than others: the sort label PERSON marks a more general concept than EMPLOYEE, and EMPLOYEE is more general than MANAGER. To represent the levels of generality, the sort labels are ordered.
+Definition There is a set S whose members are called sort labels, with a partial ordering <= defined upon S.
+The function sort maps concepts into sort labels. If a and b are concepts for which sort ( a ) <= sort ( b ) , then a is said to be a subsort of b.
+Since a concept is not a set, one concept cannot be a subset of another concept. Yet subsorts and subsets are closely related: If u is a subsort of b, as the concept EMPLOYEE is a subsort of the concept PERSON, then the set of all things to which a applies is a subset of the things to which b applies. Since a concept is an intensional symbol, not an extensional set of things, the principle of extensionality does not hold: Two concepts with different sort labels are distinct, even if they represent exactly the same things in the data base. Even if every person mentioned in the data base happens to be an employee, the meaning of employee includes additional relationships beyond those that are true for persons in general. Following are some examples of the ordering of sort labels:
+MANAGER < EMPLOYEE < PERSON < ANIMAL < ENTITY
+HIRE < ACT < EVENT, DATE < TIME
+Ordering symbols other than <= are defined in the obvious way; i.e., x < y if and only if x <= y and x != y.
+Definition The concept c is called a common subsort of the concepts a and b if sort (c) <= sort (a) and sort (c) <= sort (b).
+Definition A conceptual relation has a certain number of links, which may be attached to concepts. If a conceptual relation has n links for some integer n 3 1, it is called n-udic, and its links are numbered 1 , . . ., n.
+Formation rules
+Not all combinations of conceptsand conceptual rela- tions are meaningful; the data basedesigner must have a way of declaring certain combinationswell-formedand other combinations ill-formed. Figure 4(a) shows a well- formed conceptualgraph, which representsthephrase “boy walking.” Thegraph in Fig. 4(b) is an ill-formed combination, taken fromChomsky’s famous example “Colorless green ideassleep furiously.”
+FIXED-BINARY is caommon subsort of FIXED
+338 andBINARYT. woconcepts may have many commonformulas
+Well-formed conceptuaglraphasre like well-formed in symbolic logic or grammatical sentences in
+IOHN F. SOWA
+IBM J. RES. DEVELOP.
+of things, the Twoconceptstheyare
+permanentlybound to conceptuarlelations. dyadicconceptual relations areused in the exam- ples in this paper,butthe definitions andtheorems allow
+if theyrepre-Only
+subsorts: LION, TIGER, and JAGUAR are all com-
+
+ English. They are notnecessarily true or evenplausible, butthey ruleoutsome nonsensicalcombinations. T o distinguish the well-formed conceptual graphs, there are formationrules thatgenerate all of the well-formed graphs but none of the ill-formed ones. The data base designer must prime thesystem with a starting set of conceptual graphs, which are all well-formed by defini- tion. Every other well-formed graph is generated by re- peated applications of four basic rules.
+Assumption The system has a collection of conceptual graphs that aredefined as well-formed. Every graph con- sisting of a single concept is well-formed. All other well- formed conceptuagl raphsare obtainedbyrepeated application of the following rules:
+1. Copy An exact copy of any well-formed conceptual graph is well-formed.
+2. Detach All connected graphs that remainwhenany conceptual relation is removedfrom a well-formed conceptual graph are also well-formed.
+3. Restrict If a is a concept in a well-formed conceptual graph u, then for any sortlabel s 5 sort ( a ) ,the graph obtained by substituting s forthesort label of a is well-formed.
+4.Join Let a bea concept in a well-formed conceptual graph u and b be a concept in a well-formed concep- tual graph w,where u and w may be the same graph. Then if sort (a)= sort (b),u and w may bejoined to form a well-formed conceptual graph u by deleting a from u and attaching to b all the links of conceptual relations in u that had previously been attached toa.
+T o illustrate the formation rules, Fig. 5 presents two conceptual graphs that are assumed to be well-formed. The first graph may be read as “Amanager hiring a cer- tain person,”andthe second as“An employee being hired at a certain date.”
+Since both graphs in Fig. 5 have a concept with sort label HIRE, they may bejoined by deleting one of the concepts with label HIRE and attaching thetwodan- gling links tothe corresponding concept in theother graph. This operation produces thegraph in Fig. 6.
+Since two conceptscan only bejoined when they have identical sort labels, thesort label PERSON in Fig. 6 would have to be restricted to EMPLOYEE, as in Fig. 7, before it could be joined to the other concept labeled EMPLOYEE.
+Since Fig. 7 now has two concepts with identical sort labels, they may be joined by deleting one of them and attaching thedangling link to the otherone.
+According to the detachrule, one of the two copiesof PTNT in Fig. 8 may be removed to form the graph in Fig. 9.This graph may be read “A manager hiring an employee ata certain date.”
+Figure 6
+HIRE PERSON /\
+A join of the graphs in Fig. 5
+JULY 1976
+CONCEPTUALGRAPHS
+Figure 7 A restriction of the graphin Fig. 6.
+Figure 8
+A join of two concepts in the same graph.
+Figure 9 Finalgraph obtained by detachment.
+With an appropriate set of starting graphs, the forma- tion rules generategraphtshat may be considered “grammatically correct.” But grammar rulesare not rules of inference: formation rules generate syntactically well-formed combinationisn; ferencreulegsenerate combinations that are trueif the assumptions are true. In defining the rules of a formal system, a logician has vari- ous options for assigning a construct either to the forma- tionrules ortothe rules of inference. Sorted logic
+[ 12, 131 differs from the standard predicate calculus by incorporating sorts into the formation rules; as a result,
+it often has simplerformulas andshorter proofs. The
+sort labels on concepts make the formation rules more 339
+
+ ANIMAL
+Figure 10 Samplestartinggraphs.
+COLOR
+Figure 11 Graphderived from Fig. IO.
+PHYSICAL-BEING
+SLEEP
+Derived formation rules
+The basic formation rules operate on one concept at a time; derivedformationrules aresequences of basic operationsthatdo acomplexderivation in onestep. There are two reasons for having the derived rules: the- oretically, they can simplify the definitions and shorten the proofs; and practically, the combined operations can eliminateintermediate computationsand improve sys- temperformance. The first derived rule is projection, which extracts a subgraph from a conceptual graph and thenrestrictssome of theconcepts in it. Anotherde- rived rule is the joinof two graphs on a common projec- tion, which allows the graphs in Fig. 5 to form the graph in Fig. 9 in a single step. A special case of this rule is maximal join, where the common projection is as large as possible; maximal joins are importantin the algorithm for answering a data base query.
+Definition A well-formed conceptual graph u is a projec- tion of a well-formed conceptual graph w if u can be de- rived from w by zero ormore applications of detachment and zero or more applications of restriction, but no ap- plication of join.
+complex, but theysharply reduce the number of alterna- tives to be considered in performing inferences.
+T o show how the formation rules impose constraints on a derivation, take the two graphsin Fig. 10 as a start- ing set.SinceANIMAL < PHYSICAL-BEING,the sort label PHYSICAL-BEING in the first graph can be restricted toANIMAL.Thepthetwographscanbe
+joined on ANIMAL to form thgeraph in Fig. 11.
+This graph can be further restricted toform graphs for
+thesentences“A brown beaversleeps”or“A purple cow sleeps.” But since IDEA is not a subsort of ANI- MAL nor of PHYSICAL-BEING, there is no way of deriving “A greenidea sleeps.” The formation rules thus eliminatenonsensicalthings like green ideas,butthey allow conceivable, nonexistent things like purple cows. The rules for handling subsorts impose the same kinds of constraints as the semantic markerussed by Katz and Fodor [ 141. The partial ordering of subsorts, however, is moregeneral than semantic markers: besidesbinary distinctions, a partiaol rdering may include arbitrary trees andlattices.
+The rules presented so far place no restrictions upon the starting set of well-formed conceptualgraphs:any combination of symbols that anyone might ever think of could be represented as a conceptual graph. In setting up a query facility, the data basedesigner would select a set of concepts for all the domains in the data base, aux- iliary conceptsfor real world characteristics related to thosedomains,andotherconceptsfor functions that might be applied tovalues in the domains. Since few data base designers aretrained linguists, a practical sys- tem would have to be primed with a basic set of con- ceptsfor commonEnglish words, a set of conceptual relations for linguistic cases and mathematical relations, and a set of tools and questionnaires for automating the task of defining conceptual graphs. Much work remains to be donebeforethe definition of a language canbe reduced to filling out a questionnaire, but the purpose of this paper is to presenta formalism that may help to sys-
+340 thtsehjhotoaoertbmewt.hmsatize
+Eachdetachmentreducesthesize
+graph by atleastoneconceptual
+causethe graph to become disconnected,andthereby create several well-formed conceptual graphs, each with fewer concepts and conceptual relations than the origi- nal. Each restriction leaves the number of concepts and relations unchanged, but it makes the graph more spe- cialized. None of the formation rules allow a restriction tobeundonetoreturn to the original, more general graph.
+Theorem If u is a connected subgraph of a well-formed conceptual graph w,then u is a projection of w that can be derived from w solely by the rule of detachment.
+Proof Apply the rule of detachment to each conceptual relation of w that is not in u. All the graphs that remain are, by definition, projections of w.Since u is connected and none of itsconceptual relations weredetached, u mustbe wholly contained within one of those projec- tions. That projection cannotcontain any conceptual relation not in u since all of them were detached. Fur- thermore, it cannot containany concept not in u since each such concepwtouldhave to be attachedatcooncept of u by some conceptual relation not in u. Therefore, that projection must be u.
+If two isomorphic graphsweredrawn carefully on transparent plastic sheets, one graph could be overlaid
+on the other with a perfect match: all concepts, concep- tual relations, and links would line up exactly. The next
+a projection of a grapbhe can over-
+JOHN F. SOWA
+IBM J. RES. DEVELOP.
+of the resulting relation. It may also
+
+ laid on some subgraph of the original; the matching con- ceptual relations would be identical, but some or all of theconcepts in the original would correspondto sub- sorts in the projection.
+Theorem If u is aprojection of w, then there is an iso- morphism +that maps u onto a connected subgraph w' of w : if u is any concept of u, then a is a subsort of +( a ); if r is any conceptual relation of u, then Y = +(r); and if the ith link of r is attached to ai, then the ith link of 4 ( r ) is attached to C#J(ui).
+Proof Since u may be derived from w, there must be a
+finite sequence of applications of detachmentand re-
+striction, A', A', ..., leading from w to v. Construct
+two series of well-formed conceptual graphs ul, u2, ...,
+Proof Since a projective origin of u in w is a connected subgraph of w, it must bea well-formed conceptual graph that is derivablefrom w solely by detachment. Then to derive u, restrict each concept of the projective origin to the concept in u to which it is mapped by the isomorphism.
+Dejinition If u and w are well-formed conceptual graphs, u is a projection of u, and u is a projection of w, then u is called a common projection of u and w .
+Theorem If u is a commonprojection of u and w, then the projective origin of u in u is isomorphic to theprojec- tive origin of u in w.
+and wl, w2,..., andaseries of isomorphismsbetween
+them +',4'; ... Let u1= w1= w , and let 6' be the identity
+concept, the join rule merging the two com-
+mappingfrom u1 to w'. Then if the ith rule Ai was
+detachment, perform that rule on both ui and w i to derive
+vi+' and wi+', andlet +"' = 4'. Or if Ai restrictssome
+concept a toone of its subsorts b, then apply A' to ui
+toderive vi+', let wi+l = w', and let 4"' (b)= +'(a),
+but let 4'" have the same value as +'for all other con-
+cepts andconceptualrelations in vi+'. At each stage ih
+the derivation, +'*' will be an isomorphism from vi+' to
+i+l 11%
+This theorem implies that a projectim of a conceptual graph can be overlaid on some subgraph of the original. That subgraph is called a projective origin of the projec- tion. A given projection may have more than one possible projective origin. Suppose, for example, that the concept c was a common subsort of several different concepts in a graph u; then the conceptc by itself would be a projec- tion of u, and every concept in u of which c was a sub- sort would be a projective origin of c.
+Dejinition If u is a projection of w,then a subgraph of w that is isomorphic to u under the conditions of the pre- ceding theorem is called aprojective origin of u in w.
+The definition of projection would allow thedetach- ments and restrictions to beapplied in any order. The next theorem shows that the same projection could be derived in a standard order that first applies all detach- ments and then applies all restrictions.
+Theorem If u is a projection of w, then u can be derived from u' by first detaching conceptual relations to form a projective origin of u in w and then performing a series
+satisfying the conditions of thetheorem if the con- ditions held for i. Since they hold for 1, they must, by induction, hold for all i. The conditions musttherefore hold for the last members of the series, which are u, w ' , and 4.
+restricted to thceommon projection u.
+subsort in their common
+of restrictionsonconcepts derive u.
+of the projective origin to
+Theorem If u is a common projection of u and W,then u and w may be joined on thecommon projection u to form a well-formed conceptualgraph by the following steps:
+1. Let u' be a projective origin of u in u, and letw' be a projective origin of u in w.
+2. Restrict each concept of U' and w' to the sort label of the corresponding conceptof u.
+3. Detach all conceptual relations of u'.
+4.Join each concept of u' to the corresponding concept
+of w'.
+Theconceptsandconceptual relations in the resulting graph are the union of all those in u, those in u - u', and those in w - w'.
+Proof To provethatthe resulting conceptual graph is well-formed, it is necessary to show that the samegraph couldbeobtained from u and w byapplying only the
+basic formation rules. First, the acts of restricting con-
+cepts in u' and w' to their corresponding concepts in u
+are legal because each concept in a projection is a sub-
+sort of the corresponding conceptin any of its projective
+origins. Second, the act of detaching all the conceptual
+relations of u' at once produces the same collection of well-formed graphs obtained by detaching them one at a 341
+JULY 1976
+CONCEPTUAL GRAPHS
+Proof Twographsthatare isomorphic to each other.
+If two graphs have a common
+allowsthem to becombinedby
+mon concepts. That simple join on a common concept can be extended to a join on acommonprojection. If two graphs u and w have a common projection u , then the projective origins of u in u and in w are subgraphs of u and w that are isomorphic. Therefore, u and w can be overlaid with the two projective origins matched up ex- actly. Each concept in the two subgraphs can then be
+isomorphic to u must be
+
+ 342
+JOHN F. SOWA
+IBM J. RES, DEVELOP,
+sponds to a in a projective origin of u in u, and the con-
+HIRE EMPLOyYEE 7
+cept c that corresponds to a in a projective origin of u
+in w.
+A kernel of a common projection is important because a basic algorithm for computing common projections is tostart with a kernel andthen build it upintolarger
+pr"yG
+Figure 12 A maximal common projection of graphs in Fig. 5 .
+PERS
+Figure 13
+time. Finally, theacts of joining theconceptsfrom u' and w' are legal because they have been restrictedto identical subsorts. The derivation is therfore equivalent to a sequence of detachments, restrictions, and simple joins.
+The first set of restrictions had the effect of replacing u' and w'with copies of u. Since no detachmentswere per- formed on any conceptual relations of w,the resulting graphbefore the joins must have been the union of u with MJ - w'. Since the original graph u was connected, every conceptand conceptual relationof u - u' must have been connected to some concept of u' by conceptual re- lations not in u'. Therefore,the final series of joins would result in combining the concepts and conceptual relations of u - u' with those of the union of u with w - w'.
+When two graphs are drawn on transparent sheets, a joinon acommonprojectioncouldbeillustrated by covering part of one graph with part of the other graph.
+Overlapping conceptual relations have to match exactly, but overlapping concepts are restricted to common sub- sorts.
+Dejinition If u and w are joined ona common projection u, then all conceptsand conceptualrelations in the projective origin of u in u and the projective origin of u in w are said to be covered by the join. In particular, if the projective origin of u in u includes all of u, then the entire graph u is said to be coveredby the join.
+The notion of covering is importantfor answering a databasequery.Theuser's original question is trans- lated into a querygraph,andthesystemgeneratesan answer graph whose join with the query graph covers it completely. Thenextthree definitions introduce maxi- mal joins, which are used in deriving the answergraph.
+Dejinition If u is a common projection of u and w,then a kernel of the common projection consists of three con- ceptsa:nyconcept a in u, theconcept b thactorre-
+graphs byadding tions.
+Dejinition Let u be a common projection of u and w with a kernel k = ( u , 6, c ) . Then u is called a maximal com- mon projection with respect to thekernel k if there is no graph t with the following properties: t is acommon projection of u and w with thesame kernel k, u is a projection oft, and u is not identical to t.
+Dejinition Let u be a maximal commonprojection of u and w with respecttothe kernel k = (a,6, c).Then a maximul join of u and w with respect to k is a graph ob- tained by joining u and w on the common projection u under the condition that the concept b in u is joined to the concept c in w.
+Figure 12 is a maximal common projection of the graphs in Fig. 5 with respectto akernelconsisting of thethreeconcepts labeled HIRE:one in each of the graphs of Fig. 5 andtheone in Fig. 12. By a maximal join on this graph, Fig. 9 could be derived fromFig. 5 in one step.
+A single conceptMANAGER would alsoform a maximal commonprojection of thesametwographs, with the kernelcontaining theconcept labeled MAN- AGER in the first graph of Fig. 5 and EMPLOYEE in the secondgraph. Figure 13 showsthecorresponding maximal join; this join cannot be extended as far as the two concepts HIRE becausetheconceptual relations AGNT and PTNTare different. Thederived graph may be read as"A manager who hired a personwas hired at a certain date." As this exampleshows,two graphs may have severaldifferent maximal joins.
+Values and quantifiers
+The concepts described so far are generic concepts that may represent anything of a given sort. T o describe ac- tual information about particular entities or eventsin the database,conceptsmust be associated withparticular instances. A concept behaves like a variable in the pred- icate calculus: the sort label is analogous to a subscript in sorted logic or a data typein a programming language;
+it determines the kind of entities, events, or properties that the conceptmay represent. The concept NUMBER, for example, may represent any number; tospecify a par- ticular number, it must be assignedavalue. Figure 14 shows concepts with values specified by placing either a literal or a propenr ameaftetrhesort label.
+A maximal join with a different kernel.
+ON
+otherconceptsandconceptual
+rela-
+
+ A concept may be indefinite, constant, or quantified. An indefinite concept has justa sort label inside the box, a constant concept has a specified value, and a quanti- fied concept hasa logical quantifier. Since valuesand quantifiers are mutually exclusive, they are both written in the same position in the box. The symbol V represents a universal quantifierand 3 an existential quantifier.
+Besidesrepresentingquantifiers, conceptual graphs must indicate their scope. For eachexistential quantifier that depends on one or more universal quantifiers, dot- ted lines may be drawn from the universal quantifiers to the existential. Figure 15, forexample,representsthe proposition
+(VX) ( ~ y(3)2)(z=difference(x,y)1.
+Notethatthe variablenamesx, y, and z have disap- peared from Fig. 15. The purpose of named variables in logic is to indicate repeated uses of the same variable by repeated occurrences of its name. In conceptual graphs, however, avariable appearsas a box, and all uses of that variable are linked to the same box. By eliminating named variables, the graphs eliminateaccidentalvaria- tions caused by different choices of names and avoid the need to rename variables in substitutions.
+Dotted lineshowing thescope of quantifierscan express finer distinctions than thestandardpredicate calculus. For example, considera predicate P(x,y, z, w) with x and y universally quantified, z existentially quanti- fied depending only on x, and w existentially quantified depending only on y. Both of the following formulas in standard logic introduce irrelevant dependencies of u’ on
+xorzony:
+pG&Gq F I V Figure 14 Concepts with specified values.
+The dotted
+sent only thosedependenciesthatare sary [151.
+lines overlaid
+on a conceptual graph repre- logically neces-
+Dejinition A functionaldependency in a conceptual graph is a set of function links from one or more con- cepts called sources to a concept called the target of the functional dependency. Associated with each functional dependency is an access procedure. Whenever all the sources of afunctional dependencyhavevalues,the access procedure can computea valuefor thetarget.
+In theordinary predicate calculus,functionaldepen- dencies are seldom stated explicitly. In a system for ac- cessing data bases and other computational facilities, a statement that one variable depends on another is not as useful asanaccessprocedurethat can computethe dependency upon request. Thetechnique of combining a logical notation with procedures that evaluate functions has great generality: Woods [17] developed such a tech- nique for his question answering system, Winograd
+[ 181 suggestedamethod that he called procedural at- tachment in his discussion of frame systems, and Weyh- rauch and Thomas [ 191 used a similar method of seman- tic attachment in their proof checking system.
+Plural nouns normally havesets of entitiesastheir values. Forthequestion“Whatemployees werehired by Jones?”theexpectedanswer would be a set. T o answer such questions, concepts may have sets as val- ues, and a new symbol, E-set, is introduced to represent “Thereexists a set of sort. . . .” This quantifier is weakerthanthe ordinaryexistential because it allows empty sets as values of the concept. Since E’ defines an ordinaryfunction, it cansupport functionalcomposi- tions; E-set, however, cannot support the sacmoemposi- tionsbecause it would create fallacies suchasthe connection trap [201.
+Another refinement thaitncreasetshexpressive
+power of the notation is the possibility of introducing
+compound sort labels, which are themselves conceptual graphs,Forthenonrestrictivephrase “All elephants,
+which have trunks,” the quantifier “all” applies only to 343
+The ordinaryexistentialquantifier
+exists one or more entities that meet the
+tions. For the graph in Fig. 15, theresult of the function is unique; therefore, the unique existential quantifier E’ may be used to state that there exists exactly one value of z for each pair of x and y. In general, a function of n arguments is determined whenever theunique existential E’ depends on n universal quantifiers. Since the dotted lines then define a function,they are called functional dependencies [161. The basic conceptual graph repre- sents the domain roles, and the functional dependencies are a separate graph structure overlaid ontop of the original graph; the two structures represent complemen- tary information, and eachis necessary fora full descrip- tion of the data baserelations.
+JULY 1976
+CONCEPTUAL GRAPHS
+3 statesthatthere givencondi-
+///
+Figure 15
+\\\
+/’ NUMBER:3 -__ ‘\ --.
+\
+//’ \\
+\
+Quantified concepts with lines indicating scope.
+
+ 344
+JOHN F. SOWA
+1BM J. RES. DEVELOP.
++ MANAGER:El k"""
+To data base
+sort, uulue, and quant, definitions and theorems can re- fer to the components of a concept without mentioning the way they happen to be drawn on paper orrepresent- ed in computer storage.Althoughdiagrams are impor- tantfor helping people to visualize conceptual graphs, the formalism should not depend on some artist's draft- ing techniques.
+Conceptual schema
+A conceptual schema is a conceptual graph that has cer- tain combinations of quantifiers andfunctionaldepen- dencies. It is a mediator between the conceptual graphs and the other facilities in the computer system: its un- derlying structure is a conceptualgraph,butitsfunc- tional dependencies form a superimposed structure that provides a direct mapping to the data base. To answer a user's question, the system would find orconstruct a schema having functional dependencies that would com- pute the desired answer. The computed values may be simple scalars if the target of a functional dependency is quantified with E', or they may be sets if it is quanti- fied with E-set. The ordinaryexistential quantifier 3 is not used in a schema becauseit does not define a unique function.
+Dejinition A conceptualschema is a well-formed con- ceptual graph having one or more functional dependen- cies. If the concept c is a source of one or more func- tional dependencies, but not a target of any dependency, then quant(c)= V. If c is a target of one functional de- pendency and a source of one or more functional depen- dencies,then quant(c)= E'. If c is atargetbut not a source, then quant(c) is either E' or E-set. No concept maybethe targetoftwoormore functional dependencies. All other concepts in the schema are indefinite and are called selectors.
+For a relational data base, the relations are described by conceptual schemata. If a relation is in Codd's third normal form [221, it has a key consisting of one ormore domains, all other domains are functionally dependent upon the key, and there are no transitive dependencies. For such a relation, the conceptual schema would have a quantified conceptfor eachdomain as well as selector conceptsand conceptuarlelations thadt escribethe domain roles. Inthe relation HIRE, for example,the key domain EMPLOYEE is universally quantified, the conceptsforthe nonkeydomains MANAGER and D A T E have the quantifier E', and the selector concept HIRE is indefinite (Fig. 16). Attached to the two func- tional dependencies are the access paths for some data base relation.
+Many relations and functions have more than one set of key domains. For such relations, the system needs a separate schema for every possible set of keys. Differ-
+I
+t
+HIRE
+I
+To data base
+the sort ELEPHANT; but in the restrictive phrase "All elephants that perform in circuses" the quantifier applies tothesort ELEPHANT-THAT-PERFORM-IN-CIR- CUS. Although a sorted logic could use roundabout paraphrases toavoid adding new sort lables, Altham and Tennant [21] developed a notation for sort expressions that reflects thestructure of the original English sen- tence. For this example, the compound sort expression would itself include an existential quantifier on CIR- CUS.
+Altham and Tennant's approach could be adapted to conceptual graphs by making the set of sort labels open- ended and accepting graphs that meet certain conditions as new labels. Formalizing thaat pproachh, owever, would require considerable discussion that is beyond the scope of this paper. Values and quantifiers on concepts are defined formally by introducingtwoselectorfunc- tions, value and quant, which apply to a concept and re- turn whatevervalue or quantifier is written inside the box.
+Assumption The two functions value and quant may be applied to any concept e. If both ualue(c) and quant(c) are undefined, then c is indefinite. If ualue(c)is defined, then c is constant. If quant(c) is defined, then c is quantified. These two functions obey the following rules:
+No concept is both constant and quantified: for all e , either uafue(c)or quant(c) is undefined.
+Whenever quant (c) is defined, its value is one of the four symbols {V, 3, E', E-set}.
+There is a function permissible, which defines a set of permissible values for a concept with a given sort la- bel: if c is any constant concept, then uulue(c) must
+be in the set permissible (sort(c) ) .
+If s and t are sort labels for which s5 t , then permissi-
+b l e ( ~i)s a subset of permissible(t).
+Note that theformal definitions are independent of the
+box and circlneotation. By using theselector functions
+\ X"
+Figure 16 Conceptual schema for the HIRE relation.
+
+ ence is a functionwith three possiblekeys: in normal use, the two arguments are keys that determine the re- sult, but with either argument and the result, the other argument is determined. In order to compute any of the three values,given the other two, the systemwould need
+three schemata: besides Fig. 15, it would eed a schema
+that showed argument 1 functionally dependent on result and argument 2, and another schema that showed argu- ment 2 functionally dependent on result and argument 1. The system would select the appropriate schema for a given problem, depending on which values were speci- fied and which were to bedetermined. Since the algo- rithms for a function and its inverseare usually quite different, each of thethreeschemata would haveto specify a different procedure.
+The conceptual schema for difference illustrates the use of schemata for representing functions that accesas procedure instead of a stored file. The greater-than rela- tion,for example, has infinitely many entries,but it could be evaluated by a simple procedure; its conceptual schema would look like adata base schema, but its func- tion links would beattachedto a procedure [23]. As this example illustrates,a conceptual schema can pre- sent the same interface to the user for eithaercomputed
+or a stored relation.
+For some data base relations, all domains are part of the key. The STOCK relation, for example, is a many- to-manyrelation betweenpartsandthe supplierwho stock them; each supplier may stock multiple parts, and each part may be in the stock of multiple suppliers. This relation has two domains, both domains are part of the key, and there are no other domainsfunctionally depen- dent on the key. T o place universal quantifiers on both domains in the schema would be inaccurate because it would imply that all suppliers stock all parts. Instead, two schemata, as in Fig. 17, are needed: one says that for eachsupplier there existsa set of parts, and the other says that for each part there exiastsset of suppliers.
+The quantifier E-set includes the possibility thatthe setmaybeempty.Somesuppliers,forexamplem,aynot stock any parts at the presentime. Whenever a domain Y is functionally dependent on domain X , e.g$ X + Y , theinverse function f" determines a set of values in X (possibly empty) for each value in Y . For the HIRE relation, D A T E is functionally dependenotn EM- PLOYEE; therefore, for all dates, there exists a possi- bly emptyset of employees hired onthatdate.Since this fact is implied by the schema in Fig. 16, the system could either havea separate schema for the inverse, oitr could have a mechanism for deriving an inverse schema when necessary.
+Any relation over n domains can be characterized by a conceptual schema having n - 1 source concepts anda target concept quantified with E-set. This is the weakest
+/"'" " " " " " " " " " " " " ~
+JULY 1976
+CONCEPTUAL GRAPHS
+P
+I
+Conceptual schemata for the STOCK relation.
+Figure 17
+possible assumptionand also theleast interesting. In most practical applications, a relation has a key of less than n domainsandthenonkeydomainshaveunique values for each combination of values for the key do- mains. When a target concept has the unique existential E', targets and sources may be joined to form intricate paths of functional dependencies to answercomplex questions. The selector conceptsin a schema are like the knobs and indentations on the piecesof a jigsaw puzzle: they determine the wayinswhichaschemamaybe joined tootherschemata.Intheextremecase,the analogy
+with a jigsaw puzzle is complete; the schematafit togeth- er in only one way to answer a fixed number of possible questions. In thegeneral case, there is an endlesvsariety of combinations;theselectors match concepts in the user's question to determine the selection of schemata required to answerit.
+to
+approach [24], thetermcon-
+Inthe S P A R c / D B M S
+ceptual schema refers
+the logical relations in the entire data base; it is a de- scription of the user's view at a conceptual level rather than a description of the system's view of thedata
+a complete description of all
+astoredS. ince a
+this paperdescribes
+would correspondto
+SPARc/DBMS terms.Exceptfor thisdifference in ter- minology, the s P A R c / DBMS approach is compatible withthetheorydevelopedinthispaper.Infact,thefor- malism forconceptualgraphs and schemata may be considered as a proposed descriptiolnanguage for
+sPARc/DBMs, which asyethas notdeveloped a formal notation.
+As in the sPARc/DBMs approach,thefirststep in
+defining a data base is to develop a formalized model of
+an enterprise, with a list of all the entities and relation-
+ships tobe represented. For eachrelation to be stored in
+the data base, the data badsesigner would define one or
+more conceptual schemata to represent the roles of the
+entities and the functional dependencies between them.
+He would then maptheaccessproceduresto internal
+paths in the data base, and he would specify a domain in
+some relation for each quantified concept. If a schema 345
+conceptuasl chemas defined in onlya part of thedatabase,it
+a conceptualsubschema in the
+
+ had n quantified concepts, the mapping would specify n different domains in the data base, possibly in different relations. The formationrules forconceptualgraphs could then be used to form the schemataof derived rela- tions: an equal-join of twodatabase relations would correspond to a join of their schemata, and a projection of a relation would correspondto aprojection of its schema.
+Boolean connectives
+The world. according to Wittgenstein, is all thatisthe case [ 2 5 ] . For a particular aspect of the world, a data base is all that is known to be thecase. Wittgenstein’s view of the world as a “totality of facts,” an enormous conjunction of elementary propositions,is a position that he modified in his later philosophy, but his early position is an apt characterizationof a data base: a data base is a large conjunction of propositions, all asserted to be true.
+The main advantage of relational data bases is that the propositions arestored in a simple logical form. The data baseis organized as a conjunction of relations, each represented by a list of n-tuples for which it is known to be true; the structure is further simplified by storing the relations in third normal form. Furthermore, the proposi- tions in a data base are positive; data bases seldom if evercontain negated predicatesand relations. Other Boolean connectives, such as disjunctions, are also ab- sent in the data as stored, although they may be used in a databasequery. Conditionals areneverpresent in stored data and are rarely used in queries, but they are common in stating constraints.
+Theseobservations imply thatthe Boolean connec- tives have clearlydistinct uses in a data base system. Reaction-timeexperimentsshowthat peoplealso find some connectives more difficult to process than others: disjunctions normally take more time than conjunctions; negative statements takelonger to interpret thanpositive statements if they are presentedin isolation, but they are just as easy to process aspositive statements if they are negating a presupposition that underlies the current dis- cussion [ 2 6 ] . Theapparent symmetry in thestandard notation for symbolic logic is misleading because it sug- gests that conceptual graphshould represent them all in a parallel form. In fact, conjunction is the only one that is easy to represent- simply by joining graphs. To repre- sent all Boolean connectives in a conceptual graph, there are two basic approaches, which may be called abstract and direct.
+The abstract approach treats Boolean connectives as functions of truth values, as in symbolic logic. It intro- duces two new sort labels, SITUA TION and TRUTH- VALUE, and a conceptual relation MODE. A concept labeled SITUATION may haveconceptualgraphsas
+346 valueasno,dne labeled TRUTH-VALUE may have
+valuestrue,false,possible, unlikely, etc. MODE is a dyadic relation that links SITUATION, whose value is a conceptual graph, to TRUTH-V ALUE, whose value states whether the graph is true or false. Then all Boo- lean connectivesarerepresentedasconcepts of func- tions that take truth values as arguments and produce truth values as results; for any formula in the proposi- tional calculus, each Boolean connective would corre- spond to a concept of a Boolean function, and eachpro- positionalsymbol would correspond to a concept with sort label SITUATION. With this construction, formu- las in symbolic logic can be mapped directly into con- ceptual graphs. Thisapproachshowsthat conceptual graphs are at least as general as standard logic,but it does not take advantage of the special properties of the
+graphs.
+The direct approach is based on the hypothesis that
+conceptualgraphsare isomorphic to thementalstruc- tures underlying human thinking; it uses psychological and linguistic evidence to formulate the rules and com- puter simulations to test their efficiency. This approach, which is discussed in a forthcoming book [ 2 7 ] ,assumes that the Boolean connectives may be represented stati- cally, as in the abstract approach, but that their primary role is to indicate operationsfor combining conceptual graphs; the system has a current working graph, and the Boolean connectives specify operations on thatgraph:
+Conjunction Join a new graph to the working graph.
+NegationDetachthe negatedsubgraph fromthe working graph; an isolated negation would have noth- ing to detach andwould require the creation of an arti- ficial working graph.
+Disjunction Create an extra copyof the current work- ing graph,andjoineachalternativetoone of the copies.
+Implication If some subgraph of the working graph is aprojection of the antecedent, then join the conse- quent to theworking graph.
+Since the topic of this paper is not psychology, but data bases, furtherelaboration and justification for theserules is left to the forthcoming book. Two observations, how- ever, are worth making: first, the procedural aspect of these rules may make them useful in a computer simula- tion; and second, they are compatible with the abstract approach, since the working graph could be made up of concepts of situationtsr,utvhalues, anBdoolean connectives. People could therefore learn to dosymbolic logic, but they would have to perform multiple “direct” steps for each “abstract”operation.
+For answering data base queries, the systecmould use both direct operations forcombining graphs and abstract
+JOHN F. SOWA
+JULY 1976
+
+ representationsfor Boolean connectives. If theuser’s query contained Boolean connectives, they would initial- ly be translated into the abstract style. But to determine what data base relations should be accessed, the system would rely upon operations for directly combining con- ceptual schemata. Since the abstract approach does not illustrate the novel features of conceptual graphs,the
+infer what relations anddomainsare involved. Many natural language systems can answer this type of ques- tion becausethe required domainsare in a single data base relation; the REQUEST system described by Plath [28] and Petrick [29] supports a natural syntax for such questions. Queries that apply a function to the data are also easy to handle if theuser’s question specifies the function by an appropriate keyword, such as “average” or “total.” Queries that combine data from two or more relations can be handled if the system designerantici- pates the form of the question by providing a macro or procedurefor answering it. Butconceptual graphsare designed for themore general problem of having the sys- tem determine for itself what relations and domains are necessary to answera given question.
+If the user’s question is incomplete or ambiguous, the system may prompt him for further information; and it may refusetoacceptwordsorconstructionsthatit
+doesn’t understand. But in nocase should thesystem require the user to specify the stored relations and ac- cesspaths in thedata base. Determiningthe required relations is not a problem of syntax, but semantics. The REQUEST system, for example, has a sophisticated syn- tax that can translate a usable subset of English into a formal notation,suchas a conceptual graph or a rela- tional query language. Heidorn’s naturallanguage pro- cessor [30] would alsobe adequate; hisinternal prob- lem descriptionsare similar in structuretoconceptual
+graphs, andhis prompting technique could support a dia- logue for handling complex queries. The inference prob- lem arises after the natural language statement has been translated into a formal notation: merely converting the syntax cannot addinformation; if the user did not speci- fy the relations, the translated formwill not specify them either.
+For the TORUS system [ 21, the designermustsolve the inferenceproblem in advance by creating a prede- fined network of concepts with all possible combinations that anyone might ever ask about. When the user types in a question, the system translates it into a query graph and attempts to match it to some part of the predefined network. Associated with various parts of the network are links to appropriate data base relations. Which rela- tions are required toanswer a given question is deter- mined by the parts of the network that match the query graph.
+For a data base with a small number of domains that
+can only be related in a fixed number of combinations,
+the predefined network is adequate. But in the general
+case, the numberof combinations may be infinite; some-
+one might ask the question “Who was the person who
+hired the person who hired Jones?” where a single rela-
+tion may be iterated arbitrarily many times. If the sys-
+tem can join conceptual schemata as needed,it can gen- 347
+remainder of this paper concentrates on techniques ing direct operations.
+Answering a query
+us-
+Since the logical structure of a data base has sucha sim- pleform, a special algorithm for answering database queries can be more efficient than a general procedure for proving theorems.Whereas atheorem proverde- duces a general theorem, a data base system starts with facts aboutparticular entities and determineswhich enti- ties satisfy a givenrelation. A typical query may have the logical form,
+Find allpairs(x,y),forwhich R(x,y, a,b,c) istrue.
+In thisexample, R is arelation, x and y are variables whose values are to be determined, and a, b, and c are constants specified in the query. If R happens to be one of the basic relations around which the data baseis orga- nized, thelogical problem of answering this query is triv- ial,although the programming effort may be significant for nonrelational data bases. A major difficulty for data basequerysystemsoccurs when R is not one of the basic relations but must be determined by some combi- nation of relations.
+Most query languages avoid the difficulty by requiring the user to learn the files or relations in the data base and then to state his query in terms of them. Even the sophisticated systems based on relational databases, such as SEQUEL, SQUARE, or Query-by-Example, require theusertonameeach relation explicitly. If thequery requires data from two or more relations, the sequence of operations forcombining them can quickly exceed the abilities of anonprogrammer. Menusand on-linehelp facilities can remind the user of the available relations and give him a refreshercourseon how to combine them. Help facilities, however, do not make thelearning problem go away; they just providea piecemeal tutorial instead of a complete user’s guide.
+For systems with a natural language interface, the in- ference problem cannot be avoided. The following state- ment, forexample, is not natural English:
+In relation HIRE, find EMPLOYEE where MAN- AGER is Jones.
+People never talk like that to other people. They would say, “Who did Jones hire?” and expect the listener to
+IBM J. RES. DEVELOP
+CONCEPTUAL GRAPHS
+
+ 348
+pendentonEMPLOYEE:Lee,the AGER canbeobtainedfrom
+value for MAN- thedatabase.Thenthe
+JOHN F. SOWA
+IBM J. RES. DEVELOP.
+Figure 18
+A sample query graph.
+3. The entire querygraph q is covered by a join with the answer graph w.
+4.Foreveryconcept in q thathas avalue, thecorre- sponding concept in w has the samevalue.
+5. For every conceptin q that had a question mark, the corresponding conceptin w has a value.
+Point 1 would be satisfied if the system generates w by using the basic formation rules or the derived rules such as projection and maximal join. Point 2 guarantees that the system is sound; i.e., it will not generateincorrect answers. Point 3 implies that w includes all of the do- main roles and relationships of the query grapha,lthough some of the concepts may be further restricted; for ex- ample, PERSONin the querygraph may be restricted to EMPLOYEE or MANAGER as a result of joins with various conceptualschemata. Point 4 insuresthatthe answer is talking aboutthesameentitiesthattheuser asked about. And point 5 states that w must include an answer to the question. If the original question was in- complete orambiguous, then it would not have a unique answer. In that case, the system should prompt the user for further information; it should not require him to re- state the entire question, buotnly to add values or condi- tions that are necessary to completiet.
+Algorithms for generating an answer graph
+Beforeconsideringageneralalgorithm, we should look at a special case where the answer graph is easy to find. Suppose someone asked the question “Whhoired Lee?”. The query graph for this example is Fig. 18.
+Theconceptualschema in Fig. 16 almost meetsthe criteriaforananswer graph: a maximal join with the schema for H I R E would cover the entire query graph. The schema does not satisfy criterion 4 or 5 , however, because it does not have values for the concepts in the query graph having a value or a “?”. To determine val- ues, Fig. 18 may be joined with Fig. 16 to produce Fig.
+19. The question mark from the query graph is carried over, and thevalue “Lee” replaces the universal quanti- fier. (It thestandardpredicate calculus, a universally quantifiedvariablemayalwaysbereplaced by acon- stant; but in a sorted logic, the replacement is permissi- ble only if the sorts match. The corresponding rule for conceptualgraphs implies thatthe systemmust check whetherLee is an employeebeforerestricting PER- S0N:Lee to EMPL0YEE:Lee in order to perform the
+join.)
+When the target of a function is flagged with a ques-
+tion mark and all of its sources have values, thena value for the target can be computed by the access procedure. Since theconceptMANAGER:E’? is functionally de-
+erate only those combinations required
+at hand; otherwise, it would have to store an enormous number of combinations, most of which would never be used. Another weakness of the giant network is the lack of modularity: if the data base designer wanted to add, delete, orredefine a data base relation, he would have to change every part of the network from which that rela- tion could be accessed; in an incremental approach, however, he might only have to change one schema that was mapped tothat relation.Athird weakness of the predefined network is that it places the burden onthe database designer toforesee all possiblecombinations atthe time he is defining thenetwork;an incremental approach would allow him to enter simple schemata and let the system form the combinations. Questions of rela- tive efficiency depend on the implementation: whether it is faster to search through a large graph or to copy and join small graphs; whether a single large graph requires more 1 / 0 transfertshan several small graphsa; nd whether search techniques can more easily find a path through a large graph or find multiple small graphs.
+With conceptual graphs, either the single network or the collection of schemata couldbeused. The recom- mended approachh, owever, is tojoinschematas needed toanswer a given query.For efficiency, some combinations that are frequently used together could be included in a single schema.The value of theconcept AGE, for example, may be computed by finding a date of birth in the data base andcalling a procedure that sub- tractstwodates;therefore,theschemathat defines AGE could include access links for both the data base relation andtheprocedure. Efficiency, of course, is meaninglessunless thesystem can answerthe original questionandguaranteethattheanswer is correct; it must start with thequery graph anddetermine which schemata to join and which data base accesses to make in order to compute the answer.
+When the user types in a question, the input analyzer should translate it intoa well-formed conceptual graph q (the systems described by Heidorn or Petrick could be adaptedtodothetranslation).Everyconcept in the graph q whose value is to be determined would be flagged withaquestionmark. To determine values for the flagged concepts,thesystem should generatean answer graph w that meets thefollowing criteria:
+1. w is a well-formed conceptual graph. 2. w is true if thedatabase is correct.
+for the question
+
+ manager’s name would be substituted for the quantifier, and the resulting graph would satisfy all the criteria for an answer. In a more complex case, the target of a func- tional dependency may be flagged with a question mark, but one ormore sources may not yet have values;in that case,questionmarks could be propagatedbackwards along the functionlinks to flag thesourceconcepts whose values are requested. If the question marks even- tually stop on conceptswith values, then the access pro- cedurescan be called andtheresultsreturnedtothe original questionmark, which came from the user’s query.
+The criticalproblem arises whenaquestion mark stops on a concept that has neither a value nor a func- tion link leading to it; then there is no procedure to exe- cute or place to propagate another question mark. Such
+a state is similar to an original query graph. Figure 18, for example, had a question mark on a concept but no function links. For Fig. 18, the answer was obtained by joining the query graph to a conceptual schema so that the question mark was joined to a target concept. This technique could be generalized to form algorithm A:
+Start with the concepts on the query graph that are flagged with question marks; join conceptual schemata to the graph so that the Ragged concepts are covered by targect oncepts; propagate thequestion marks backwards along the function links; evaluateany func- tional dependencies whose sources all havevalues; and repeat until the original question is answered.
+This algorithm sounds plausible, but will it always termi- nate with a result, and will the result be the correct an- swer to theoriginal question?
+Unfortunately, algorithm A may not always terminate, and it can generate incorrectresults. If the original ques- tion was incomplete, the algorithm makes no provision for generating prompts:instead, it keeps joiningsche- mata andpropagating questionmarks without evehraving enough values to answer them. Although every function may generatecorrect results, there could be multiple paths of functionlinks in the data base, and the algo- rithm might stumble upon a path that answered a ques- tion different from the one the user asked; the user may have asked for the quantity of widgets on hand, and the algorithm could generate the quantity ordered.
+To keep the system fromlooping endlessly on unsolv- able problems,algorithm B imposes another condition on algorithm A: every join of a new schema to the de- veloping answer graph must cover at least one concept of the original query graph. This restriction keepsthe graphs from growing too large, with branches far remote fromtheconcepts of the original query. By avoiding remote joins,algorithm B may be unable to answersome complex queries automatically, but it could still answer
+t
+HIRE DATE:E’
+?
+First step towards the answer graph.
+a potentially infinite number of questions. For example, “Who was the person who hired the person who hired the personwho hired Jones?” couldbe answered be- cause every schemajoined would cover part of the origi- nal query graph. If the system runs out of schemata to
+jointothe graphand it still hasunansweredquestion marks, it could use the concepts left with question marks as the starting points for prompting the user for further information. By asking for help when it runs into a dead end, the system could extend the query graph and even- tually generate any answerderivable from the database.
+The additionalrestriction for algorithmBkeeps it from looping, but it does not guarantee correct answers. The next three definitions characterizethe permissible conditions for joining schemata, the schematic universe that includes all possible schemata that may be derived byrepeated joins, and theset of all correctanswer graphs. Every answer graph may be generated by deter- mining values for the quantified concepts of some sche- ma in the schematicuniverse. For theTORUS system, the analog of the schematic universe is its single large con- ceptual network. Forthis theory, however, the schemat- ic universe would never be generated in its entirety; in- stead, schemata would be joined as needed to answer a given query.
+DeJinition A schematic join is a join either of two con- ceptualgraphs or of oneconceptual graph with itself under the following conditions:
+The joinmust be maximal.
+The result inherits all function links; the sources and target of each functional dependency in the resulting graph are the concepts coveredby the source and tar- get concepts in the original graph.
+When an indefinite concept is joined to a quantified concept, the resulting concept has the samequantifier.
+When the quantifier E’ is joined to the quantifier V, the result has quantifier E’.
+When the quantifier V is joined to the quantifier V, the
+result has quantifier V. 349
+JULY 1976
+CONCEPTUAL GRAPHS
+Figure 19
+
+ 350
+For each pair of schemata (s,t ) in the schematic uni- verse, if a schematic join of s and t is possible, then the schema that results from that join isin the sche- matic universe.
+Since the schemata in S define functions, the schemat- ic universe represents all possible functions that may be derived by composition of the functions in S . As exam-
+ples, let f ( x ) and g ( x , y ) be functions defined by sche- mata (cf. Fig. 15 for a diagram of such a schema). Then a schematic join of the target concept of theschemaforf
+JOHN F. SOWA
+IBM J. RES. DEVELOP.
+All other joins of quantifiers (E' to E', E' to E-set, E- set to E-set, and E-set to V) are prohibited; if this re- striction prevents a join from being maximal, then the prospective schematic join is rejected.
+Theorem The graph that results froma schematic join of
+with thesourceconcept of anothercopy of thesame schema would producetheschemafor f ( f ( x ) ) .The join of the target o f f with thesourceconcept of the same copy would produce the schema for x = f ( x ) . A
+join of the two source concepts for g would produce the schemaforI:(x,x).Andajoinofaschemaforf witha schema for g in all possible combinations would produce schematafor x(f(x), Y),g(x, f(y)), and f(g(x,Y)) when the target of one functional dependency is joined to a source of another; but it would also produce the com- binations { f ( x ) ,g(x, y ) } and {g(x, y ) , f ( y ) }when the sources are joined. Note that joining two copies of the schema forf could not produce {f(x), f ( x )} because a maximal join would cause the twoidentical function con- cepts as well as the twotarget concepts to beoverlaid on top of each other; theprohibition against joining two ex- istentials would then cause the joinbetorejected.
+When all universallyquantified concepts in a schema are assigned values from the data base, then the access procedures can compute values for the other quantified concepts. By systematicallygeneratingvalues for all schemata in the schematic universe, the set of all possi- ble answer graphsmay be enumerated. If a closed cycle of functionlinks hasbeencreated by some schematic join, then the resulting schema can never obtain values fortargets in thecycle and cannot lead toananswer graph. A conflict may arise whenatarget concept has been restricted for some join; thena value computed for the target may not belong tothesubsortto which the concept has been restricted; any graph with such a con- flict is rejected [311.
+Definition An answer graph is a conceptual graphob- tained by assigning values to the quantified concepts of some schema s according to thefollowing rules:
+For each concept c in s where quant ( c ) = V, assign a value in the setpermissible (sort ( c )) .
+When all source concepts of a functional dependency have values and the target does not havea value, then use the access procedure to compute a value for the target. Repeat as long as there is a dependency whose sources have values and target does not.
+If some target concept remains without a value, then reject the graph.
+If some target concept c hasbeen assignedavalue that is not in the setpermissible (sort (c)),then reject the graph.
+Otherwise, accept thegraph as an answergraph.
+Theanswergraphsare all well-formed conceptual graphsbecause they are simply schemata with values assigned. The questionof whether the answer graphs are
+oneortwoconceptualschemata schema.
+Proof This result follows from
+properties defined for a conceptualschemare pre- served by the conditions for a schematicjoin.
+One reason for requiring the joins to be maximal is to force the paths of selector concepts to coalesce when- ever possible; otherwise,redundantorspuriouspaths could be generated that the data base designer had not intended. Since universalquantifiers are the sources of function links, the effect of joining two universals is to specify the same argument for twodifferent functions or for two arguments of the same function. Joining E' to V specifies the result of one function as an input argument of another. Joining two existential quantifiers is prohib- ited becaustewo differenfut nctional dependencies would then have the same target concept, which might beassignedtwoinconsistentvalues. Therequirement for maximal joins together with the prohibition against
+joining two existentiaql uantifiers preventsthesame schema from being joined more than once in exactly the same position; this restriction prevents the system from getting into a loop when it is generating an answer graph. The rule against joining E-set with a universal quantifier prohibits sets as inputs to functions; further extensions to the theory could allow sets as inputs, but these will not be considered in this paper.
+Dejinition The schemutic universe determined by a set S of conceptual schemata is theset of all schemataob- tained by the following operations:
+All schemata in S are in the schematic universe. Foreachschema s in theschematicuniverse,
+if a the schema that results from that join is in the schematic
+schematic join of s with itself is possible,then universe.
+is also a conceptual
+the observation that the
+
+ all true depends on the adequacy of the original set of conceptual schemata. Each answer graph is a statement of some relationshipsbetween entitiesrecorded in the data base; if the stored data were correct and if each of the original schemata correctly stated functional depen- dencies, then their joins would also state a correct func- tional dependency. Possible errors could arisebecause some combination of schemata might cause the selector concepts (the indefinite concepts such as H I R E in Fig.
+16) toform unexpected pathsthatare not true.The selector concepts are necessary to distinguishdifferent domain roles and to select the correct schemata for an- swering a given query. In order to avoid undesired com- binations,however, the number of selectors shouldbe kept tothe minimum necessaryto distinguish thedo- main roles. An important topic for further study is a set of guidelines to help data base designersdefine schemata that avoid such combinations.
+If the data base hasa set of conceptual schemata that rule outincorrect combinations,then thesystemcan answer a user's question simply by picking the correct answer graph. Unfortunately, there are too many possi- ble answer graphs tolet the system generate them one at a time and check them against the query graph. There- fore, the system mustbemoreselective and join only those schemata that have a good chance of leading to a satisfactory answer graph. The next four definitions de- scribe an algorithm thatavoidsincorrect combinations and uses a set of preference rules as a heuristic guide for speeding up the search.
+Dejinition A querygraph is a well-formed conceptual graph with the following properties: it contains no quan- tifier or function link, one or more of its concepts have values, one or more concepts have a question mark, and no concept hasboth a valueand a question mark.
+Thequery graph is generated by the input analyzer from theuser's original question.Theinputanalyzer must have astarting set of well-formed conceptual graphs that are compatible with the data base schemata: every starting graph used by the input analyzer must be coverable by a join with some schema in the schematic universe. This is a necessary condition for deriving an- swerablequerygraphs.It is not a sufficient condition because the user can always ask a question with incom- pleteinformation; but, in thatcase,thesystem should prompt him for themissing information.
+Dejinition For a set of conceptual schemata S and a query graph q, a working graph for q is any conceptual graph that may be obtained by the following operations:
+The querygraph q is a working graph for q .
+If w is a working graph for q , antd s is a schema in S , then the result of a schematic join either of w with it- self or of w with s is also a working graph for q, pro- vided that no concept that has a value is joined to a concept with a quantifier E' or E-set, no concept that has a value is restricted to a subsort for which the val- ue is not permitted, and all values and question marks in w are copied over to the corresponding conceptsof the resulting graph(some universalquantifiers may therefore be replaced with values).
+If w is a workinggraph for q and the target of some functional dependency f in w has a question mark, then the graph obtained by adding question marks to every source off that does not have a value is also a working graphforq.
+If w is a working graph for q, all sources of some func- tional dependencyfin w have values, and the target of f does not have a value, then the graph obtained by evaluating theaccessprocedurefor f , replacing the
+quantifier onthe target concept with the value,and erasing the question mark on the target (if present) is also a working graph for 4.
+The working graphs are steps along the way towards answering a query.The following theorem shows that when all the quantified concepts of a working graph have been given values, the resulting values are the same as those obtained from some answer graph. The theorem is generalenough to includealgorithms that permit joins arbitrarily remote from the original query graph as well as algorithms that require each join to cover at least one concept of the query graph.
+Theorem Let S be a set of conceptual schemata, q be a query graph, and w be a working graph for q. If no con- cepts in w have quantifiers or questionmarksand if everyconceptandconceptual relation of q has been covered by a join with some schema from S,then the values in w for the concepts of q having question marks arethesame as those obtained by joining q tosome answer graph that covers it completely.
+Proof Let sl,sz, ' .., by the sequence of schemata that were joined to q in deriving w. Observe that the criteria for joininga schema to a working graph are stronger than the criteria foar schematic join; therefore, the sche- mata sl,s2, ... may bejoined by schematic joinsto each otherin the same orderand position that they were
+joined in forming w. The result of these joinsis a schema
+s that is isomorphic to w and contains the samecomposi-
+tion of function links used to derive w. Since w has no
+quantifiers left, the query graph q must have had values
+to assign to eachuniversal quantifier of s,and the results
+of evaluating the access proceduresmust have generated 351
+JULY 1976
+CONCEPTUALGRAPHS
+
+ joinswith
+352 joins.
+the highest preferencescoreare
+preferred
+JOHN F. SOWA
+IBM J. RES. DEVELOP.
+values for every existentially quantified concept. There- fore, assign the valuesfrom q tothe universalquanti- fiers of s, and evaluate all access procedures to deter- mine values for the existentials; the result is an answer graph w’, which is isomorphic to w, has the same values for corresponding concepts, but may have different sort labels because of the different order of performingre-
+strictions. Since the values generated for w satisfied all the question marks of q, the same values of w’ must also satisfy them. Therefore, a join of q to the answer graph w’ would cover q and assign the same values as w to the question marksof q.
+Thistheoremmeansthatany algorithmobeying the conditions for deriving a working graph will generate a correct answer toa query provided that the set of sche- mata do not permit incorrect answer graphs. The next definition states preference rules for choosing between variouspossibleschematic joins. The preference rules have no effect upon the correctness or incorrectness of the answers generated; they are heuristicrules for en- couraging joinsthathave a good chance of answering the question while avoiding paths that are remote from the original questionT. hepreferencerules lead to graphs with high ‘Isemantic density” as in the technique
+The preference rules are simply guidelines for choos- ing between alternative joins. If they require too much computationfor aparticularimplementation, thenthe rules may be modified or replaced without fear of gener- ating incorrectanswers.One way of speedingup the search for preferred joins is to index the schemata ac- cording to the concepts they contain: one index for the selectorconcepts of a schema,anotherforthe target concepts, and anotherforthesourceconcepts.Then, instead of computing preference scores for all possible
+joins,thesystem could pick aquestionmark in the query graph, look in the index for a target concept that had a common subsort, and choosea join with that sche- ma if its preference score was abovea given threshold.
+Dejinition Let S be a set of schemata and q be a query graphT. henthe following procedurefor generating working graphs forq is called algorithm C:
+w:=q;
+while (there is a preferred joinj with W )
+do begin
+w: = result of performing j with w; while (there is a source concept a in w
+& a does not havea value
+& a does not have a question mark
+& the target of a has a question mark)
+do place a question mark on a ; while (there is a target concept b in w
+& b has a question mark
+& all sources of b have values)
+do get a value for b from its access procedure;
+if (there are no question marks left in w
+and all of q has been covered by some join)
+then begin
+print answer; stop
+end
+end.
+If there are any question marks left on w and no pre- ferred joins to perform, then each universally quantified concept having a question mark is called a prompting point.
+A prompting point is where the system begins when it asks a question to get further information. This method of prompting is similar to Heidorn’s technique in his simulation system. Withoutprompting, algorithmC is not able to generateall possible answer graphs because each preferred joinmustcover at leastoneconcept of the querygraph;questionsthatrequireremotesearches
+cannot be answered automatically. Furthermore, algo- rithm C does no backtracking; in cases where the set of schemata permit many possible combinations, the algo- rithm might try one combination that would preclude
+of preference semantics that analyzing natural language.
+Wilks
+[32] developed for
+Dejinition Let S be a set of schemata, q be a query graph, and w be a working graph for q. Then if j is any schematic join either of w with itself or of w with some schema in S, the preference score for the joinj with w is the sum of the points determined by the following condi- tions:
+Add a point for each conceptin w that is covered by j . Add an additional point for each concept in q that is
+covered by j . If this value is zero, then reject j .
+If a concept in w having a question mark is covered by a target of a functionlink,then add a point; if it is covered by a source of a function link, then subtract a point.
+If a concept in w thathas a value is covered by a source of afunctionlink,thanadd a point; if it is covered by a target of a function link, then rejectj .
+For each conceptand conceptual relation in q that has not yet been covered by any join, add a point if it is covered by j .
+If every possible join has been rejected, then there is no preferred join. Otherwise, the one or more schematic
+
+ others. If there are no question marks left on theworking graph but not all of the query graph has been coveredby some join,theneitherthe original querycontained ir- relevant information or the systemhas found an alterna- tive path through the data base that answers a question different from the one the user asked. In such cases, too, it would require help to get outof its predicament.
+A system based on algorithm C would do what it was told explicitly and whatever wasobviously implied by what it was told. Whenever it could not find an obvious solution to a problem, it would come back and ask for furtherinstructions. A systemthatsearchedone level deep would relieve the user of the need to specify much tedious detail, and it could still answer arbitrarily com- plex questions withsomperomptingA. lthough one could relax the preference rules to let the system search deeperf, urther searching would increasethesystem overhead without substantially improving its usefulness. As the example in the next section shows, algorithm C can generate sophisticatedinferences without a great deal of searching.
+By computing an answer graph, the system can deter- mine the stateof some entitiesin the data basein answer to a specific question. If the user had asked a question containing Boolean connectives, the system would have to generate separate answers for each part of the ques- tion andthen combinethemaccording tothetype of connective. If instead of asking about a specific entity such as PERSON:Lee, the question had been about all persons having a certainattribute, then the system should not compute an answer graphwith specific values for the concepts; instead, it should generate a schema that could berepeatedlyevaluatedforeveryperson.
+Any method, such as algorithm C, that can be used to generate specific answer graphs can also be used to de- termine a schema simply by erasing thevaluesonthe answer graph and saving the functional dependencies. A schema with its access procedures is a specialized pro- gram for answering query graphs of a particular shape; once the schema has been found, it can be evaluated for every element of a set. With extensionsfor Boolean connectives and repeated evaluations over sets, concep- tual graphs could form the basis of a general data base query facility.
+Example
+Suppose a computer user typed in the question “What was Lee’s age when hired?” If the system had a relation for all employees and their ages at time of hire, it could immediately find the answer. In most systems, however, that question would not be asked often enough to justify space for everybody’s age when hired. T o get an answer tothat simple question, the user would haveto find Lee’s dateof birth from onerelation, find his date of hire
+Figure 20
+I
+AGE: ? TIME Query graph for “What was Lee’s age whenhired?”
+JULY 1976
+CONCEPTUAL GRAPHS
+fromanother relation, and then call afunction to sub- tract the two dates. A system having conceptual graphs for its user interface,however, could accept thequestion as stated in English and determine for itself what rela- tions and procedures to access.
+Assumethathe input analyzercantranslatethe user’squestion into the query graphshown in Fig. 20. The concept PERSON has the value Lee, and the value of AGE is to be determined.Theconceptual relation CHRC has been borrowed from the TORUS system; it may be read “is a characteristic of.” To determine which relation to insert between PERSONand AGE, theinput analyzer would follow the rule that the preposition “of” or the possessive case marker ‘“s” indicates an unspeci- fied relation betweentwonouns;theanalyzer would search through its starting set of conceptual graphs and find CHRCasthe defaultrelation between AGE and PERSONT. he conceptuarlelation A T is used for moments of time;the relation LOC is used for spatial locations. The input analyzer will translatephrases of the form ‘‘X when y” into a graph were x and y are shown tooccuratthe same time. Since“hired” is apassive participle, PERS0N:Lee is linked asthe patient of HIRE; for the question “What was Lee’s age when hir- ing?” PERS0N:Lee would be the agent of HIRE.
+Since the questionmark on AGE cannot be propagat- ed anywhere, the system must find some schema to join to the query graph. It naturally starts with the concept AGE, which has the question mark, and searches for a schema in which A G E is functionally dependenton something that is computable. Figure 21 showssuch a schema, which gives the definition of AGE. Associated with this schema are access links to a data base relation for a person’s date of birth and an access procedure that computes the difference of two dates.
+The definition of AGE is in second normal form, but
+not third normal form because there is a transitive de-
+pendency of AGE upon DATE andthenupon PER-
+SON. The BIRTH relation in the data base, however,
+may be stored in thirdnormalform if convenient.This
+example illustrates the point that a schema may present
+a view of the data basedifferent from the one that is ac-
+tually stored. Acomplex schemacansometimes im-
+prove efficiency byreducing thenumber of steps in a
+data baseinference. 353
+
+ 9t
+\ I
+\\\ I DIFFERENCE
+BIRTH
+Figure 21
+PERSON Figure 22
+L DATE:E’ Schemafor defining AGE.
+AGE Maximal common projection
+DATE of Figs. 20 and 21
+\ ‘\
+,P ‘\\\ t
+DATE: V //
+Fig. 16for the data baserelation HIRE meets these cri- teria, anda join with Fig. 16 is now the preferred join; its preference score would be I 1. The schema in Fig. 2 1 couldnotbe joined again tothe workinggraph in the same position as before, because a maximal join would cause two existential quantifiers to be joined, and such joinsare prohibited by therulesfor a schematic join. When the schematic join of Figs. 16 and 23 is performed, PERS0N:Lee is restricted toEMPL0YEE:Lee.The system must therefore check the data base to determine whether Lee is an employee; if he is, the system can de- rive Fig. 24.
+When the schema forH I R E is joined to the graph,the question mark on DATE is propagatedback toEM- PL0YEE:Lee.Sincethesource of the functionalde- pendencyhas avalue, thesystem can accessthedata base to find Lee’s date of hire. Now both arguments of DIFFERENCE have values, and the access procedure cancompute Lee’sage. NotethattheHIREschema contains information about the manager, which is irrele- vant tothecurrentquestion;since it is not needed, it would not be evaluated. A good property of this tech- nique is that schemata canbearbitrarily complex, and the system will simply ignore the unneeded information.
+Oncetheanswerhas been generated,the functional dependencies in Fig. 24 are no longer needed. But if the user wanted to know the agewhen hired for Smith, Jones,andothers, then thesystem should savethe dependencies.Theconceptsandconceptual relations define the meaning of the domains andtheirinterrela- tionships;the functional dependenciesare a data flow graph for computing the actual values. If the same func- tion is to bevaluatedrepeatedly, thesystem could erase the current set of values and compute new values using the same functional dependency graph. Foroptim- ized execution, the system could even compile the func- tional dependencies into COBOL or pL/I.
+Towards a natural interface
+As a computer interface, English has beenmuch ma- ligned for its supposed wordiness. Part of the blame for the bad reputation must be borne by “English-like’’ lan- guages, such as COBOL, whichoften do little butpada formalnotationwith English prepositions. Onequery language, for example, has the following notation:
+SKILFILE JOBCODE EQ ‘ENG’ SKILCODEEQ‘GERMAN’
+LOCEQ‘NY’
+LIST EMPLOYEE MANNBR DEPT SVCYRS.
+The language has a macro facility thatcanprovide an English-like interface. When the necessary macros have beendefined, thesystem can translatethe following English sentence into the above notation:
+Since DATE < TIME, Fig. 22 is a maximal common projection of the query graph with the schema in Fig. 21 having as a kernel the three concepts AGE. To compute the preference score for the join onthis common projec- tion, the system would add 3 points forthethreecon- ceptscovered by thejoin, 3 morepoints because all three concepts are in the query graph, 1 point because a concept witha question mark is covered by atarget concept, 1 point because a concept withavalue is covered by a source,and 5 extra points because five concepts andconceptualrelations of thequery graph that had not previously been covered are coveredby this
+join; thetotalpreference score is 13. A join with the schema forHIRE (Fig.16) would have a score of 12;it is almost as good, but the join with Fig. 21 is the pre- ferred join.
+The schematic join of Fig. 21 with the query graph is the workinggraph in Fig. 23. In forming thejoin,the universalquantifier onPERSON is replacedwith the value Lee, and the universally quantified concept D A T E replaces the indefinite conceptTIME.Thequestion marks are propagated from targets to sources of func- tional dependencies, according to algorithm C.
+When the question mark reaches PERSON:Lee, the systemcan use theaccess links to find Lee’s date of birth from the data base. This value will satisfy one ar- gument of DIFFERENCE. The other argument, how- ever, hasa question mark that cannot be propagated fur- ther. The system must find a schema in which the con- cept DA TE is functionally dependent on some concept
+354 thaht as aknown (or computable) value. Theschema in
+JOHN F. SOWA
+IBM J. RES. DEVELOP.
+
+ From theskills inventory get me the name,man number, department, and years in service of the engineers with knowledge of German located in the New York area.
+For a practical system, such a half-hearted approach to English is useless. Whereas macros generally reduce the amount of typing,thismacro is 74% longerthan the formanl otation. Furthermore,thephrase“Fromthe
+skills inventory” may be easierto read than “SKIL- FILE,” but it is no easier to remember. The macro lan- guage requireseveryphrasetobe defined byaunique rule; “years in service” is translated to “SVCYRS” by one rule, but “years of service” would require a separate rule. A more natural interface should accept the follow- ing request:
+Forengineers in NewYorkwho know German, list name, man no., dept., service years.
+This sentence is shorter than the formal notation and is easier toread than the English-like macro. It is also eas- ier for the user to learn because it omits the file name “SKILFILE” and doesnot use theodd abbreviations “MANNBR” or “SVCYRS.” Because it omits the file name, it cannot be translated to theformal notation by a change of syntax; instead, the systemmust use semantic mechanisms like theconceptualschema, which deter- mine system dependencies as a result of processing the English sentence.
+Although theabove examplerequired fewer key- strokes for the English syntax than for the formal nota- tion, the primary advantage of natural language is not in syntax but in semantics. Duringa conversation,the most importantsemanticfeaturesappear in dialogue, inference, and metalanguage:
+Dialogue Natural languages are used in adialogue where both parties contribute to the conversation and ask questions to clarify or expand an incomplete mes- sage.
+Inference Mostsentences canbe short andsimple becausethe listener is expectedto fill in the“ob- vious” gaps. A completetheorem proving system is not necessary to understand English, but a technique for inferring the obviousis essential.
+Metalanguage English is its own metalanguage. It can be used either to talk about a subject or to talk about whatcan besaid aboutthesubject; it cantherefore support prompting and help facilities in the same lan- guage used for queriesand programming.
+These three features of naturallanguage are the areas where conceptual graphs can make the biggest contribu- tion. Inference wasemphasized in this paper,but con- ceptual graphs can also help in dialogues and metalan-
+\
+\\ \\\
+L
+t
+JULY 1976
+CONCEPTUALGRAPHS
+Figure 23
+Working graph.
+” ”+
+//
+/””-””””””””””
+M A N A G E R : E ‘
+/ ’
+Figure 24 Finalworking graph.
+guage. Prompting methodhs avealready been men- tioned, and many of Heidorn’s dialogues can be adapted to conceptual graphs with little more than a change of notation. For helpfacilities, the same conceptual sche-
+mata used toaccessthedatabase
+into English sentencestoanswer
+about command anddataformats.
+schematafor accessing dataandfor generating mes- sages,thesystem would guaranteethatthe diagnostic
+and helpfacilities would always be consistent with the implementation. 355
+7
+couldbetranslated auser’s questions By using thesame
+
+ 356
+7. R. F. Boyce, D. D. Chamberlin, W. F. King, and M. M. Hammer, “Specifying Queriesas Relational Expressions: The SQUARE Data Sublanguage,” Cornmun. ACM 18, 621 (1975j.
+8. M. M. Zloof, “Query by Example,” AFlPS Con$ Proc., Nut. Comput. Conj:,1975p. 43I.
+9. Note that an employee number is not a common subsort of EMPLOYEEandNUMBER.Instead, it is a subsort of NUMBERthatbears a particularelationship toEM- PLOYEE.
+10. C. J. Fillmore, “The Case for Case,” Univc~rsalsin Linguis- tic Theory,edited by E. Bach and R. T. Harms, Holt,Rine- hart and Winston, New York, p. 1.
+11. In themore completetheory,presented in aforthcoming book [27], there is only one primitive conceptual relation, named LINK. All others are defined by the process of rela- tional abstraction, which is essentially the lambda calculus
+JOHN F. SOWA
+IBMJ.RES. DEVELOP.
+Codd [33] emphasized the importance of anatural language interface for thecasual user. Yet even the most experienced system programmerswrite comments in their native language because they find it moreunder- standable and expressive than a programming language. The same properties that make English good for queries also make it good for programming: the abilities to sup- port a dialogue for problemdefinition, to take care of machine dependent details without the user’s assistance, and to answer questions about formats and conventions. A program to be executed in batch mode, where perfor- mance is critical,shouldnot go through aninterpretive naturallanguageinterface foreverydatabaseaccess; instead, the programmercoulduse that interface while
+writing the programandthen havethesystem compile the accesses intoa standard language for optimized exe- cution.
+Suppose a programmer asked “Give me a COBOL pro- cedure to compute a person’s age when hired.” For this case, the system would not derive an answer graph from the data base. Instead,it would derive a general schema for computing age when hired foranyperson.Every schema in the schematic universe is a general function. For a one-shot query, the system uses the schema only once; but for automatic programming, the system could compute a schema as though it were answering a query and then translate the schema into a program. Instead of immediately executing the calls upon access procedures,
+be used directly by the data base designer for represent- ing and analyzing relationships between various domains in the data base; displays and plotters could present the graphs for a two-dimensional view of the data base. The designer could see the graphs on a display, but the end user would not beaware of them. Instead,conceptual graphs could support an interface that would let the user talk about familiar data in a familiar terminology without
+the system could compiletheminto
+which the programmercouldinsert
+batch execution. The programmer
+facility as a programming assistant thatwould handle the machine dependent details of data base accesses.
+For a system of distributed computers,conceptual graphs can support a clean separation between the mes- sage handling and thedatabaseaccesses.Instead of calling theaccessproceduresforeach value requested for some target concept, algorithm C could be modified to make all of the accesses at the end of the derivation. If the data base processoirs in a different computer from the input analyzer, all of the prompting and interaction could be handled by a local computer, and only a list of specific accesses would need to be sent to the data base processor. This separation would be especially useful if the data basehad a relatively small number of relations, but a very large number of entries in each relation:a computer that did message handling would only need a few schemata that could be stored on an ordinary disk, but the data base processor would require a mass stor- age facility.
+Conceptual graphs are precise enough to support logi- cal inferences and data base accesses, yet they are rich enough and flexible enough to serve as a semantic basis for natural language. As a formal notation,thegraphscan
+COBOL statements, into a program for
+The ideas in this paper have evolved over a long period of time and have benefited from suggestions by numer- ous friendsandcolleagues. I especiallythank J. M. Cadiou, A. K. Chandra, E. F. Codd, R. L. Griffith, G. E.
+Heidorn, H. D. Mills, C. P. Wang, and M. Wilson from IBM, L. G. Creary, professor of philosophy atCase Western Reserve University, and the tinknown referees who forced me to makethis a better paper.
+This paper containssome material from a forthcoming bookentitled ConceptualStructures:InformutionPro- cessing in MindandMachine to bepublished by the Addison-Wesley Publishing Co. as one volume in the IBM Systems Programming Series.
+References and notes
+1. E. F. Codd, “A Relational Model of Data for Large Shared Data Banks,” Commun. ACM 13, 377 (1970).
+2. N. Roussopoulos and J. Mylopoulos, “Using Semantic Networks for DataBase Management,” Proceedings of the
+could use the query
+InternationaCl onference on
+ACM, New Y ork, 1975, p. 144.
+C . E. Heidorn, “Automatic Programmingthrough Natural Language Dialogue,” IBM J . Res. Dev~4op2.0, 302 (1976, this issue).
+Comp//tcr Modc.1~ of Thought dnd Lunguuge, edited by R. C. Schank and K. M. Colby, W. H. Freeman and Com- pany, San Francisco, 1973.
+Representation and Understanding:Studies in Cognitive Science, edited by D. C. Bobrow and A.Collins, Academic Press, New Y ork, 1975.
+M. M. Astrahanand D. D. Charnberlin,“Implementation of a Structured English Query Language,” Cornmun. ACM 18, 580 (1975).
+the need for special query languagesand oriented conventions.
+Acknowledgment
+computer-
+3. 4. 5. 6.
+Very Large Datu Bases,
+
+ generalized to graphs. This paper, however, presents a re- stricted version of the formalism, in which the conceptual relations are fixed in advance.
+12. A. Schmidt, “Uber deduktive Theorien mit mehreren Sor- ten von Grunddingen,” Mrrth. Ann. 115, 485 (1938).
+13. H. Wang, “The Logic of Many-Sorted Theories,” J. of SymbolicLogic 17, 105 (1952).
+14. J. J. Katz and J. A. Fodor, “The Structure of a Semantic Theory,” Language 39, I 70 ( 1963).
+15. For a study of the increased expressive power introduced by such a notation, see W. J. Walker, “Finite Partially Or- dered Quantification,” J. SymbolicLogic 35,535 (1970).
+16. A standard technique in methods of theorem proving is to replacexistentialquantifiers with Skolem functions,cf. J. A. Robinson, “A Machine-OrientedLogic Based on the
+Comput.Much. 12, 23
+representingquantifiers, however, this technique fails because the resulting formula is no longer equivalent to the original. When an existential quantifier specifies a unique entity, however, then the lines of scopedetermine auniquefunction, andthe functional
+form is equivalent to the quantifier notation.
+17. W. A. Woods, “Procedural Semantics for a Question-An-
+swering Machine,” AFIPS Con$Proc.,Fall .It. Comput.
+Conf., 1968 p. 457.
+18. T. Winograd, “Frame Representations andthe Declarative-
+Procedural Controversy,” Representation and Understand- ing: Studies in Cognitive Science, edited by D. G. Bobrow and A. Collins, Academic Press, New York, 1975.
+19. R. W. Weyhrauch andA. J. Thomas,“FOL: aProof Checker for First-OrderLogic,” Memo AIM-235, Stanford Artificial Intelligence Laboratory, NTIS #AD/ A-006 898, 1974.
+20. See Codd [ I ] , p. 385, for a discussion of the connection trap.
+21. J. E. J. Altham and N. W. Tennant, “SortalQuantifica- tion,” Formal Semantics of Natural Language, edited by E. L. Keenan,Cambridge University Press, p. 46.
+22. E. F. Codd, “Further Normalization of the Data Base Re- lationalModel,” Data Base Systems, edited by R. Rustin, Prentice-Hall, Englewood Cliffs, N.J., 1972, p. 33.
+23. A greater-than join of two data baserelations could be repre-
+24. Interim Report, A N S I / X 3 / S P A R C , Study Group on Data Base ManagemenSt ystems, reprinted in F D T , ACM- SIGMOD 7, 1975.
+25. L. Wittgenstein, Tractatus Logico-Philosophicus, Routledge and Kegan Paul, London.
+26. P. C. Wason and P. N. Johnson-Laird, Psychology of Rea- soning, B. T. Batsford, London, 1972.
+27. J.F. Sowa, Conceptual Structures: Information Processing in Mind and Machine, Addison-Wesley, Reading, Mass., to be published.
+28. W. J. Plath, “REQUEST: A Natural-LanguageQuestion- Answering System,” IBM J . Res. Develop. 20, 326 (1976, this issue).
+29. S. R. Petrick, “On Natural Language Based Computer Sys- tems,” IBM J . Res. Develop. 20, 3 14 ( 1976, this issue). 30. G. E.Heidorn, “English as a Very HighLevelLanguage
+for Simulation Programming,” Proceedings of the Sympo- sium on V ery High Level Languages, SIGPLAN Notices
+9, (April 1974), p. 91.
+31. Readerswhoare familiar withtheresolutionprinciple
+should notethe parallels betweenschematicjoinsand Robinson’s unification algorithm [ 161. Both techniques in- volve universally quantified functionalcompositions and the set of all possible answer graphsis theanalog of the Herbrand universe.AlgorithmC may be interpreted as a heuristic method for finding an element of the Herbrand universe that answers the user’s question.
+32. Y. Wilks, “An Intelligent AnalyzerandUnderstander of English,” Commun. A C M 18, 264 ( 1975).
+33. E. F . Codd, “Seven Steps to Rendezvous with the Casual User,” DataBaseMunagement, edited by J. W. Klimbie and K. L. Koffeman, North-Holland Publishing Co., Am- sterdam, (1974) p. 179.
+Received April 2, 1975; revised Februury 23, 1976
+ResolutionPrinciple,” J . Assoc. ( 1965). As ageneral method of
+sented by joining their schemata greater-than relation.
+with the schema
+for the
+IBM SystemsReseurch
+JULY 1976
+CONCEPTUALGRAPHS
+Theuuthor is locatedatthe Institute,219E.42ndStreet,NewYork,NY 10017.
+357
+
+I
+Mary Smith Tom Jones
+MANAGER
+John Brown Mary Smith
+9/1/10
+8/8/75
+JULY 1916
+(:ONCEPTUAL GRAPHS
+Figure 1
+The HIRE relation.
+p z q pzq1- 1-
+Figure 2
+Examples of concepts.

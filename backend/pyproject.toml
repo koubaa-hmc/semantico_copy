@@ -13,6 +13,7 @@ fastapi = {extras = ["all"], version = "^0.104.1"}
 requests = "^2.31.0"
 pyzotero = "^1.5.18"
 pdfminer-six = "^20221105"
+numpy = "^1.26.2"
 
 
 [build-system]

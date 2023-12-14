@@ -6,7 +6,7 @@ from semantico_backend.controller.segmentationController import routerSegmentToJ
 app = FastAPI()
 app.include_router(routerSegmentToJson)
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.ERROR)
 logger = logging.getLogger(__name__)
 
 

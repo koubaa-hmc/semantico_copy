@@ -4,7 +4,7 @@ import os
 
 from pyzotero import zotero
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.ERROR)
 logger = logging.getLogger(__name__)
 
 
@@ -48,11 +48,14 @@ class ZoteroInterface:
         items = self.get_search_items(term)
         for item in items:
             data_key = item['data']['key']
-            logger.debug(f"Processing: {data_key}")
-            try:
-                file_name = data_key + '.pdf'
-                self.zot.dump(data_key, file_name, self.conf['output_folder'])
+            file_name = data_key + '.pdf'
+            if file_name in os.listdir(self.output_file_path):
                 file_paths.append(os.path.join(self.output_file_path, file_name))
-            except Exception as e:
-                print(str(e))
+            else:
+                try:
+                    self.zot.dump(data_key, file_name, self.conf['output_folder'])
+                    file_paths.append(os.path.join(self.output_file_path, file_name))
+                except Exception as e:
+                    logger.debug(str(e))
+
         return file_paths
