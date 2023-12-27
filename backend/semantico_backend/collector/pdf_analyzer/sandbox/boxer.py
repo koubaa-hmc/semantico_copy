@@ -17,9 +17,11 @@ import PIL
 from PIL import Image
 import io
 from pathlib import Path  # it's just my favorite way to handle files
+import os
 
 # pdf path
-pdf_path = "../../../output/pdffile_002.pdf"
+file_path = os.getcwd()
+pdf_path = "../../../../output/GWFRN8MA.pdf"
 # pdf_path = Path.cwd()/"Git From Bottom Up.pdf"
 
 
@@ -97,7 +99,7 @@ firstpage_image = images[0]
 
 # show first page with the right size (at least the one that pdfminer says)
 firstpage_image.show()
-firstpage_image.save("data_003/firstpage.png")
+firstpage_image.save("data/firstpage.png")
 
 # the magic numbers
 dpi = 200/72
@@ -129,7 +131,7 @@ for i, _ in enumerate(boxes_data):
     convert2pil_image = PIL.Image.fromarray(box)
     # show cropped box image
     # convert2pil_image.show()
-    png = "data_003/crop_" + str(i) + ".png"
+    png = "crop_" + str(i) + ".png"
     convert2pil_image.save(png)
     # print this does not match with the text, means there's an error
     print(text)

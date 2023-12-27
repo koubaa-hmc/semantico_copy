@@ -28,10 +28,11 @@ class Segmentation:
         :return: count of paragraphs
         """
         self.set_file_paths(item_desc)
+        count_paragraphs = 0
         for file_path in self.file_paths:
             reader = PdfReader(file_path)
             paragraphs = reader.extract_paragraphs()
-            count_paragraphs = len(paragraphs)
+            count_paragraphs += len(paragraphs)
 
         return {f"Count of paragraphs for the description {item_desc}": count_paragraphs,
                 "found in (nb of files)": len(self.file_paths)}
@@ -61,7 +62,7 @@ class Segmentation:
         d_layout = dict()
         for file_path in self.file_paths:
             reader = PdfReader(file_path)
-            d_layout = reader.explore_layout()
+            d_layout = reader.explore_layout('rect')
 
         return d_layout
 

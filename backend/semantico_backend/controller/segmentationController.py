@@ -9,9 +9,11 @@ routerSegmentToJson = APIRouter(
 
 segmentation = Segmentation()
 
+
 @routerSegmentToJson.get("/search/documents/{pdfDesc}")
 async def search_documents(pdf_desc: str):
     return segmentation.set_file_paths(pdf_desc)
+
 
 @routerSegmentToJson.get("/paragraphs/count/{pdfDesc}")
 async def count_paragraphs(pdf_desc: str):
