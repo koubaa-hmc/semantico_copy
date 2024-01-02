@@ -1,9 +1,7 @@
 from io import StringIO
 
-from pdfminer.converter import PDFPageAggregator
 from pdfminer.converter import TextConverter
 from pdfminer.layout import LAParams
-from pdfminer.layout import LTText
 from pdfminer.pdfdocument import PDFDocument
 from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.pdfpage import PDFPage
@@ -26,4 +24,3 @@ class PdfReader:
                 interpreter.process_page(page)
 
         return output_string.getvalue()
-

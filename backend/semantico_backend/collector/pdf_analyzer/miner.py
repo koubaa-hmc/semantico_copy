@@ -36,4 +36,3 @@ class PdfReader:
                         x, y, text = layout_object.bbox[0], layout_object.bbox[3], layout_object.get_text()
                         output[p+c] = {"x": x, "y": y, "text": text}
         return output
-

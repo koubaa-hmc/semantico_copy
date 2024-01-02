@@ -1,6 +1,6 @@
 {
   "library_id": "5312576",
   "library_type": "group",
-  "output_folder": "output/",
+  "output_folder": "test_output/",
   "top_count": 5
 }

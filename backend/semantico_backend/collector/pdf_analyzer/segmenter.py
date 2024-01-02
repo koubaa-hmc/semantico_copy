@@ -65,4 +65,3 @@ class Segmentation:
             d_layout = reader.explore_layout('rect')
 
         return d_layout
-

@@ -2,6 +2,6 @@
   "library_id": "10358870",
   "library_type": "user",
   "api_key": "eMr6X1mxvElSlW3zf9udbfCK",
-  "output_folder": "output/",
+  "output_folder": "test_output/",
   "top_count": 5
 }

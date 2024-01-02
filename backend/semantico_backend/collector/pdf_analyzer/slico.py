@@ -4,16 +4,13 @@ from skimage.segmentation import slic, chan_vese
 from skimage.transform import downscale_local_mean, resize
 import matplotlib.pyplot as plt
 from skimage.color import label2rgb
-from skimage.filters import threshold_otsu
 from pdf2image import convert_from_path
-import tempfile
 import os
 
 
 def export_pngs(work_path, pdf_path=None):
     if len(os.listdir(work_path)) == 0 and pdf_path:
-        images_from_path = convert_from_path(pdf_path, output_folder=work_path,
-                                             fmt='png')
+        convert_from_path(pdf_path, output_folder=work_path, fmt='png')
     # Sample Image of scikit-image package
     print(f"{sorted(os.listdir(work_path))}")
     png_pages = [skimage.io.imread(os.path.join(work_path, png_path)) for png_path in sorted(os.listdir(work_path))
@@ -22,7 +19,6 @@ def export_pngs(work_path, pdf_path=None):
 
 
 def export_segments(png_pages):
-
     for png_page in png_pages:
         plt.figure(figsize=(16, 24))
         # Applying Simple Linear Iterative
