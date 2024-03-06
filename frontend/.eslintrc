@@ -1,0 +1,27 @@
+{
+  "extends": [
+    "@nuxtjs/eslint-config-typescript"
+  ],
+  "rules": {
+    "no-console": "off",
+    "comma-dangle": ["warn", {
+      "arrays": "only-multiline",
+      "objects": "only-multiline"
+    }],
+    "semi": ["error", "always"],
+    "quotes": ["error", "double", {
+      "avoidEscape": true,
+      "allowTemplateLiterals": true
+    }],
+    "space-before-function-paren": ["error", {
+      "asyncArrow": "always",
+      "anonymous": "never",
+      "named": "never"
+    }],
+    "vue/html-self-closing": ["error", {
+      "html": {
+        "void": "always"
+      }
+    }]
+  }
+}

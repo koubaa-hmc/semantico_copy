@@ -1,0 +1,12 @@
+version: "3.7"
+services:
+  informationportal_frontend_dev:
+    image: node:lts-slim
+    ports:
+      - "80:3000"
+    restart: unless-stopped
+    container_name: informationportal_frontend_dev
+    volumes:
+      - ../.:/frontend
+    working_dir: /frontend
+    command: bash -c "yarn install && yarn dev"

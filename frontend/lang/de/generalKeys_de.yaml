@@ -1,0 +1,3 @@
+# General Keys which are not assigned to any specific component but widely used during the project
+# For clarification the style of the file name differs from those for component based keys.
+hmc_web_url: https://www.helmholtz-metadaten.de/de

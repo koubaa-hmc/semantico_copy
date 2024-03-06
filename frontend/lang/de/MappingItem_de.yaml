@@ -1,0 +1,159 @@
+no_javascript_message: Diese Seite ben&ouml;tigt Javascript um korrekt angezeigt zu werden
+welcome: Willkommen
+home_via_path: Startseite per Pfadangabe
+home_via_name: Startseite per Name
+home_lang_en_link: Startseite in Englisch
+home_lang_de_link: Startseite
+instant_language_switcher: Sofortumschalter für Sprache
+language_link_examples: Linkbeispiele mit Sprachverweis (siehe Code)
+lnk_txt_imprint: Impressum
+lnk_txt_data_policy: Datenschutz
+lnk_txt_contact: Kontakt
+helmholtz_slogan: Spitzenforschung für große Herausforderungen.
+btn_txt_logout: Log out
+btn_txt_sync_to_gitlab: Sync to GitLab
+btn_txt_search: Suche
+no_category_content: Kategorie ohne Inhalt…
+intro_text: Dies ist eine unfertige Arbeit ohne Anspruch auf Vollständigkeit. Das Hinzufügen neuer Einträge über diese Schnittstelle ist derzeit deaktiviert, aber wir freuen uns über Ihre Vorschläge für neue Einträge oder sonstiges Feedback. Hub Health Team am DKFZ, hmc-health (at) dkfz-heidelberg.de
+  Wir haben im Laufe der Zeit viele nützliche Ressourcen gesammelt und möchten diese gerne mit Ihnen teilen. Wenn Sie auf der Suche nach Metadatenstandards, Datenformaten, Software und mehr für Ihr Projekt sind, sind Sie hier genau richtig.
+loading_notice: Laden...
+resource_unloadable_notice: Diese Ressource konnte leider nicht geladen werden.
+
+_id: ID
+_hub: Hub
+_type: Type
+mappingCategory: Category
+resourceName: Name
+name: name
+nameType: type
+nameLanguage: language
+identifier: Other IDs
+id: value
+identifierType: type
+resourceDescription: Description
+resourceUri: URL
+documentationUri: Documentation
+contact: Contact
+contactName: name
+contactIdentifier: ID
+contactIdentifierSystem: ID type
+contactUri: URI
+contactRole: role
+keyword: Keywords
+date: Date
+resourceDate: value
+dateType: type
+resourceStatus: Status
+relatedHelmholtzCentre: Related Helmholtz Centre
+helmholtzCentre: name
+relationType: relation type
+scientificDiscipline: Scientific discipline
+helmholtzResearchField: Helmholtz research field
+
+
+dataFormatVersion: Version
+isOpenStandard: Is an open standard
+formatType: Application area
+filenameExtension: Filename extension
+
+dataSourceType: Type
+api: API
+apiProtocol: protocol
+apiBaseUri: base URI
+apiDocumentationUri: documentation
+
+author: Author
+fullname: full name
+#name: name
+surname: surname
+affiliation: affiliation
+authorPID: PID
+bestAccessRight: Access right
+code: code
+label: label
+scheme: scheme
+contributor: Contributor
+relatedPublications: Related publications
+country: Country
+#code: code
+#label: label
+dataFormat: Format
+geolocation: Geolocation
+box: box
+place: place
+point: point
+publisher: Publisher
+fairScore: FAIR score by F-UJI [%]
+version: version
+assessmentDate: date
+totalScore: total score
+FScore: F score
+AScore: A score
+IScore: I score
+RScore: R score
+size: Size
+source: Source
+tool: Tool
+dataType: Type
+
+DocumentType: Type
+documentVersion: Version
+
+LicenseScope: Scope
+licenseJurisdiction: Jurisdiction
+isMachineReadable: Is machine readable
+licenseVersion: Version
+
+metadataStandardVersion: Version
+metadataStandardScope: Scope
+
+externalIRI: External IRI
+
+organizationType: Type
+geographicAreaServed: Geographic area served
+
+identifierScope: Scope
+hasMinimumMetadata: Requires minimal metadata
+hasVersionControl: Has version control
+
+policyType: Type
+policyTargetGroup: Target group
+policyVersion: Version
+
+repositoryType: Type
+repositoryLanguage: Language
+# api: API
+# apiProtocol: protocol
+# apiBaseUri: base URI
+# apiDocumentationUri: documentation
+dataAccess: Data access level
+databaseAccess: Repository access level
+dataUploadType: Data upload openness level
+offersEnhancedPublication: Offers enhanced publication
+providerType: Provider type
+contentType: Content type
+
+crosswalkVersion: Version
+# isMachineReadable: Is machine readable
+
+softwareType: Type
+developmentStatus: Development status
+softwareVersion: Version
+
+terminologyType: Type
+terminologyLanguage: Language
+dereferencableResource: Dereferencable resource
+hasDereferencableTerms: Has dereferencable terms
+hasTextualDefinitions: Has textual definitions
+hasMachineReadableDefinitions: Has machine readable definitions
+terminologyPrefix: Terminology prefix
+terminologyVersion: Version
+
+trainingMaterialType: Type
+trainingMaterialTypeGeneral: DataCite type
+trainingMaterialLanguage: Language
+resourceFileSize: File size
+resourceDuration: Consumption Duration
+trainingMaterialVersion: Version
+accessCondition: Access level
+hasAccessCost: Has access cost

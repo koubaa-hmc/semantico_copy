@@ -1,0 +1,12 @@
+version: "3.7"
+services:
+  informationportal_frontend:
+    build:
+      context: ../.
+      dockerfile: ./Docker/Dockerfile
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    container_name: informationportal_frontend
+    working_dir: /frontend
+    command: node .output/server/index.mjs

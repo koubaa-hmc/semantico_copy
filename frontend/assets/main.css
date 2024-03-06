@@ -1,0 +1,26 @@
+@font-face {
+    font-family: 'Hermann';
+    font-style: normal;
+    font-weight: 700;
+    src: url('/assets/fonts/Hermann-Bold.otf')  format('opentype'),
+         url('/assets/fonts/Hermann-Bold.woff')  format('woff');
+}
+
+@font-face {
+    font-family: 'Helmholtz';
+    font-style: normal;
+    font-weight: 400;
+    src: url('/assets/fonts/HelmholtzHalvarMittel-Rg.eot'),
+         url('/assets/fonts/HelmholtzHalvarMittel-Rg.woff')  format('woff'),
+         url('/assets/fonts/HelmholtzHalvarMittel-Rg.woff2')  format('woff2');
+}
+
+#__nuxt , body {
+    display: flex;
+    flex-grow: 1
+}
+
+html {
+    display: flex;
+    min-height: 100%
+}

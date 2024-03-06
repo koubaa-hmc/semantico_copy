@@ -1,0 +1,6 @@
+# General Keys which are not assigned to any specific component but widely used during the project
+# For clarification the style of the file name differs from those for component based keys.
+hmc_full_name: Helmholtz Metadata Collaboration
+hmc_web_url: https://www.helmholtz-metadaten.de/en
+information_portal_name: Information Portal
+hmc_information_portal_name: HMC Information Portal

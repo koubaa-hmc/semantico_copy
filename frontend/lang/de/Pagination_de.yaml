@@ -1,0 +1,5 @@
+next_page: "Nächste Seite"
+prev_page: "Vorherige Seite"
+page_info: "Seite {currentPage} von {totalPages} Seiten"
+first_page: "Erste Seite"
+last_page: "Letzte Seite"
